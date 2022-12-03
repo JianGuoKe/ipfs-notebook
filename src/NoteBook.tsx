@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button, Drawer } from 'antd';
+import { Layout, Button, Drawer, Modal } from 'antd';
 import './NoteBook.less';
 import DragSider from './DragSider';
 import { SettingOutlined } from '@ant-design/icons';
@@ -9,6 +9,8 @@ import MenuList from './Menus';
 import NoteEditor from './NoteEditor';
 import PPKModal from './PPKModal';
 import FolderModal from './FolderModal';
+import { db } from './db';
+import { useLiveQuery } from 'dexie-react-hooks';
 
 const { Content } = Layout;
 
@@ -16,7 +18,9 @@ export default function NoteBook(): React.ReactElement {
   const [open, setOpen] = useState(false);
   const [bookVisible, setBookVisible] = useState(true);
   const [openPPK, setOpenPPK] = useState(false);
+  const [createFolder, setCreateFolder] = useState('add');
   const [openFolder, setOpenFolder] = useState(false);
+  const books = useLiveQuery(() => db.books.toArray(), []);
 
   const showModal = () => {
     setOpenPPK(true);
@@ -26,7 +30,8 @@ export default function NoteBook(): React.ReactElement {
     setOpenPPK(false);
   };
 
-  const showFolderModal = () => {
+  const showFolderModal = (createFolder = 'add') => {
+    setCreateFolder(createFolder);
     setOpenFolder(true);
   };
   const hideFolderModal = () => {
@@ -42,13 +47,21 @@ export default function NoteBook(): React.ReactElement {
   };
 
   useEffect(() => {}, [bookVisible]);
+  useEffect(() => {
+    if (!books || books?.length <= 0) {
+      showFolderModal('create');
+    }
+  }, [books]);
 
   return (
     <>
       <Layout hasSider={true} className="ipfs-notebook">
         {bookVisible && (
           <DragSider>
-            <BookMenu></BookMenu>
+            <BookMenu
+              addVisible={openFolder}
+              onCreateFolder={showFolderModal}
+            ></BookMenu>
             <Button
               className="ipfs-notebook-settings"
               type="text"
@@ -76,7 +89,11 @@ export default function NoteBook(): React.ReactElement {
           ></Settings>
         </Drawer>
       </Layout>
-      <FolderModal open={openFolder} onClose={hideFolderModal}></FolderModal>
+      <FolderModal
+        open={openFolder}
+        mode={createFolder}
+        onClose={hideFolderModal}
+      ></FolderModal>
       <PPKModal open={openPPK} onClose={hideModal}></PPKModal>
     </>
   );
