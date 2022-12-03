@@ -8,6 +8,7 @@ import React, {
   useState,
 } from 'react';
 import throttle from 'lodash/throttle';
+import classnames from 'classnames';
 
 // 实现元素左右拖拽的Hook逻辑
 function useLeft2Right(
@@ -43,11 +44,13 @@ function useLeft2Right(
 
 // 可以拖拽改变宽度的侧边栏组件
 export default function DragSider(props: {
+  defaultWidth?: number;
+  className?: string | undefined;
   children: JSX.Element | JSX.Element[];
 }): React.ReactElement {
   const { children } = props;
 
-  const [navWidth, setNavWidth] = useState(200);
+  const [navWidth, setNavWidth] = useState(props.defaultWidth || 200);
   const resizeLine = useRef<HTMLDivElement>(null);
 
   useLeft2Right(resizeLine, setNavWidth);
@@ -67,11 +70,13 @@ export default function DragSider(props: {
     cursor: 'w-resize',
   };
 
-  const rootClassName =
-    'ant-layout-sider ant-layout-sider-dark ant-layout-sider-has-trigger';
+  const rootClassName = 'ant-layout-sider ant-layout-sider-dark';
 
   return (
-    <aside className={rootClassName} style={asideStyle}>
+    <aside
+      className={classnames(rootClassName, props.className)}
+      style={asideStyle}
+    >
       <div ref={resizeLine} style={resizeLineStyle} />
       {children}
     </aside>

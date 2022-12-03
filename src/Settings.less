@@ -1,0 +1,31 @@
+.ipfs-settings {
+  margin: -24px;
+
+  .ant-collapse-content-box {
+    > p:first-child {
+      margin-top: 0;
+    }
+
+    .ant-list-item {
+      h4 {
+        margin-top: 0;
+
+        .anticon-delete {
+          display: none;
+          cursor: pointer;
+        }
+      }
+
+      &:hover {
+        .anticon-delete {
+          display: inline-block;
+        }
+      }
+
+      .ant-list-item-meta-description {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}

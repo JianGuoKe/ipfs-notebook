@@ -2,6 +2,11 @@
 
 .ipfs-notebook {
   height: 100%;
+  background: #fff;
+
+  .ant-layout {
+    background: #fff;
+  }
 
   .ant-layout-sider-dark,
   .ant-layout-sider-dark,
@@ -22,20 +27,57 @@
     width: calc(100% - 16px);
   }
 
+  .ipfs-notebook-menu {
+    background: #fff;
+    border-right: solid 1px #e1e1e1;
+
+    .btns {
+      padding: 0 8px;
+
+      .ant-btn-text:not(:disabled):active {
+        background: none;
+      }
+
+      button {
+        line-height: 31px;
+        height: 41px;
+
+        &:hover {
+          border-color: #fff;
+          background: transparent;
+          color: @pcolor;
+        }
+
+        &:focus {
+          outline: none;
+        }
+
+        &.right {
+          float: right;
+        }
+      }
+    }
+
+    .ant-list-item {
+      cursor: pointer;
+    }
+  }
+
   .quill {
     height: 100%;
     width: 100%;
   }
-  .ql-toolbar,
-  .ql-container {
+  .ql-toolbar.ql-snow,
+  .ql-container.ql-snow {
     border: #fff;
   }
-  .ql-toolbar {
+  .ql-toolbar.ql-snow {
+    width: 100%;
     min-width: 400px;
     z-index: 9;
     position: absolute;
   }
-  .ql-container {
+  .ql-container.ql-snow {
     padding-top: 41px;
     z-index: 1;
   }
@@ -117,5 +159,20 @@
   .ql-snow.ql-toolbar .ql-picker-item.ql-selected,
   .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
     color: @pcolor;
+  }
+
+  &-settings {
+    position: absolute;
+    bottom: 0;
+
+    &:hover {
+      border-color: #e1e1e1;
+      background: transparent;
+      color: @pcolor;
+    }
+
+    &:focus {
+      outline: none;
+    }
   }
 }

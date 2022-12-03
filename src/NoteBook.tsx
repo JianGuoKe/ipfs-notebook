@@ -1,68 +1,83 @@
-import React, { useState } from 'react';
-import { Layout, MenuProps, Menu } from 'antd';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import React, { useEffect, useState } from 'react';
+import { Layout, Button, Drawer } from 'antd';
 import './NoteBook.less';
 import DragSider from './DragSider';
-import { FolderOutlined } from '@ant-design/icons';
-
-type MenuItem = Required<MenuProps>['items'][number];
-
-function getItem(
-  label: React.ReactNode,
-  key: React.Key,
-  icon?: React.ReactNode,
-  children?: MenuItem[],
-  type?: 'group'
-): MenuItem {
-  return {
-    key,
-    icon,
-    children,
-    label,
-    type,
-  };
-}
-
-const items: MenuProps['items'] = [
-  getItem(
-    'Group',
-    'grp',
-    null,
-    [
-      getItem('Option 13', '13', <FolderOutlined />),
-      getItem('Option 14', '14'),
-    ],
-    'group'
-  ),
-];
+import { SettingOutlined } from '@ant-design/icons';
+import Settings from './Settings';
+import BookMenu from './Books';
+import MenuList from './Menus';
+import NoteEditor from './NoteEditor';
+import PPKModal from './PPKModal';
+import FolderModal from './FolderModal';
 
 const { Content } = Layout;
 
 export default function NoteBook(): React.ReactElement {
-  const [value, setValue] = useState('');
+  const [open, setOpen] = useState(false);
+  const [bookVisible, setBookVisible] = useState(true);
+  const [openPPK, setOpenPPK] = useState(false);
+  const [openFolder, setOpenFolder] = useState(false);
 
-  const onClick: MenuProps['onClick'] = (e) => {
-    console.log('click ', e);
+  const showModal = () => {
+    setOpenPPK(true);
   };
 
+  const hideModal = () => {
+    setOpenPPK(false);
+  };
+
+  const showFolderModal = () => {
+    setOpenFolder(true);
+  };
+  const hideFolderModal = () => {
+    setOpenFolder(false);
+  };
+
+  const showDrawer = () => {
+    setOpen(true);
+  };
+
+  const onClose = () => {
+    setOpen(false);
+  };
+
+  useEffect(() => {}, [bookVisible]);
+
   return (
-    <Layout hasSider={true} className="ipfs-notebook">
-      <DragSider>
-        <Menu
-          theme="dark"
-          onClick={onClick}
-          defaultSelectedKeys={['1']}
-          defaultOpenKeys={['sub1']}
-          mode="inline"
-          items={items}
-        />
-      </DragSider>
-      <Layout>
-        <Content>
-          <ReactQuill value={value} onChange={setValue} />
-        </Content>
+    <>
+      <Layout hasSider={true} className="ipfs-notebook">
+        {bookVisible && (
+          <DragSider>
+            <BookMenu></BookMenu>
+            <Button
+              className="ipfs-notebook-settings"
+              type="text"
+              title="记事本设置"
+              icon={<SettingOutlined />}
+              onClick={showDrawer}
+            ></Button>
+          </DragSider>
+        )}
+        <Layout hasSider={true}>
+          <DragSider className="ipfs-notebook-menu" defaultWidth={300}>
+            <MenuList
+              bookVisible={bookVisible}
+              onBookVisibleChange={setBookVisible}
+            ></MenuList>
+          </DragSider>
+          <Content>
+            <NoteEditor></NoteEditor>
+          </Content>
+        </Layout>
+        <Drawer title="设置" placement="right" onClose={onClose} open={open}>
+          <Settings
+            onPPKAdd={showModal}
+            onFolderAdd={showFolderModal}
+          ></Settings>
+        </Drawer>
       </Layout>
-    </Layout>
+      <FolderModal open={openFolder} onClose={hideFolderModal}></FolderModal>
+      <PPKModal open={openPPK} onClose={hideModal}></PPKModal>
+    </>
   );
 }
