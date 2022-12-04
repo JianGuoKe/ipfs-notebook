@@ -1,5 +1,6 @@
-import { Button, InputRef, Modal, Input } from 'antd';
+import { Button, InputRef, Modal, Input, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
+import { db } from './db';
 
 export default function ({
   open,
@@ -12,23 +13,40 @@ export default function ({
 }) {
   const inputPriRef = useRef<InputRef>(null);
   const [newMode, setMode] = useState(mode);
+  const [hash, setHash] = useState('');
 
   useEffect(() => {
     setMode(mode);
   }, [mode]);
 
-  function addNewKey() {
-    // TODO
-    onClose();
+  async function addNewHash() {
+    try {
+      await db.createEmptyBook('新记事本');
+      onClose();
+    } catch (err) {
+      message.error((err as Error).message);
+    }
   }
+
+  async function addHash() {
+    try {
+      await db.addBook(hash);
+      onClose();
+    } catch (err) {
+      message.error((err as Error).message);
+    }
+  }
+
   const footer = [];
   if (newMode === 'add') {
     footer.push(
-      <Button key="new">创建新文件夹</Button>,
+      <Button key="new" onClick={addNewHash}>
+        创建新文件夹
+      </Button>,
       <Button key="back" onClick={onClose}>
         取消
       </Button>,
-      <Button key="submit" type="primary" onClick={addNewKey}>
+      <Button key="submit" type="primary" onClick={addHash}>
         确定添加
       </Button>
     );
@@ -41,7 +59,7 @@ export default function ({
       <Button key="back" onClick={onClose}>
         取消
       </Button>,
-      <Button key="new" type={'primary'}>
+      <Button key="new" type={'primary'} onClick={addNewHash}>
         创建新文件夹
       </Button>
     );
@@ -50,7 +68,7 @@ export default function ({
     <Modal
       open={open}
       title="添加记事本"
-      onOk={addNewKey}
+      onOk={addNewHash}
       onCancel={onClose}
       footer={footer}
     >
@@ -59,6 +77,8 @@ export default function ({
         <Input
           ref={inputPriRef}
           placeholder="文件夹Hash"
+          value={hash}
+          onChange={(e) => setHash(e.target.value)}
           onFocus={() =>
             inputPriRef.current!.focus({
               cursor: 'all',
