@@ -7,7 +7,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import throttle from 'lodash/throttle';
 import classnames from 'classnames';
 
 // 实现元素左右拖拽的Hook逻辑

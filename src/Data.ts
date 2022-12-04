@@ -1,4 +1,4 @@
-import Dexie, { liveQuery, Table } from 'dexie';
+import Dexie, { IndexableType, liveQuery, Table } from 'dexie';
 
 export interface Book {
   id?: number;
@@ -23,6 +23,7 @@ export interface Menu {
 export interface Note {
   id?: number;
   content: string;
+  bookId: number;
   hash?: string;
   createAt: Date;
   updateAt?: Date;
@@ -47,10 +48,12 @@ export interface Node {
 }
 
 export interface Option {
-  bookWidth: number,
-  bookVisible: boolean,
-  menuWidth: number,
-  menuVisible: boolean
+  id?: number;
+  bookWidth?: number,
+  bookVisible?: boolean,
+  menuWidth?: number,
+  menuVisible?: boolean,
+  activeNoteId?: number
 }
 
 function getDateNow() {
@@ -75,15 +78,25 @@ export class NoteBookDexie extends Dexie {
     return this.books.filter(it => it.isActived).first();
   }
 
+  getOptions() {
+    return this.options.toCollection().first();
+  }
+
+  async getActiveNote() {
+    const options = await this.getOptions();
+    const activeBook = await this.getActiveBook();
+    return (await this.notes.filter(note => note.id === options?.activeNoteId).first()) ||
+      await this.notes.filter(note => note.bookId === activeBook?.id).first();
+  }
+
   constructor() {
     super('jianguoke.notebook');
-    this.version(5).stores({
-      books: '++id, title, url, hash, enabled, createAt, deleteAt, keyId, isActived, activedAt',// Primary key and indexed props
-      menus: '++id, title, bookId, summary, createAt, updateAt, deleteAt',
-      notes: '++id, content, bookId, keyId, updateAt, createAt, deleteAt',
-      keys: '++id, name, pubKey, priKey, enabled, createAt, deleteAt',
-      options: 'bookWidth, bookVisible, menuWidth, menuVisible',
-      nodes: 'url, createAt',
+    this.version(12).stores({
+      books: '++id, title, isActived',// Primary key and indexed props
+      notes: '++id, bookId, content, createAt, updateAt',
+      keys: '++id',
+      options: '++id',
+      nodes: 'url',
     });
     this.init();
   }
@@ -94,6 +107,9 @@ export class NoteBookDexie extends Dexie {
         url: 'https://jianguoke.cn/ipfs',
         createAt: getDateNow()
       })
+    }
+    if (await this.options.count() <= 0) {
+      await this.options.add({})
     }
   }
 
@@ -109,9 +125,7 @@ export class NoteBookDexie extends Dexie {
       isActived: false,
       title
     });
-    await this.books.each(book => {
-      book.isActived = book.id === id;
-    })
+    await this.changeBook(id);
   }
 
   async addBook(hash: string) {
@@ -126,12 +140,20 @@ export class NoteBookDexie extends Dexie {
       createAt: getDateNow(),
       isActived: false,
     });
-    await this.books.each(book => {
-      book.isActived = book.id === id;
-    })
+    await this.changeBook(id);
   }
 
-  async deleteBook(id: number) {
+  async changeBook(id: IndexableType) {
+    const books: Book[] = [];
+    await this.books.each(book => {
+      book.isActived = book.id === id;
+      books.push(book);
+    });
+    await this.books.bulkPut(books);
+    this.activeNote(null);
+  }
+
+  async deleteBook(id: IndexableType) {
     const activeBook = await this.getActiveBook();
     const needChange = activeBook?.id === id;
     await this.books.delete(id);
@@ -143,23 +165,33 @@ export class NoteBookDexie extends Dexie {
     }
   }
 
-  async changeBook(id: number) {
-    const books: Book[] = [];
-    await this.books.each(book => {
-      book.isActived = book.id === id
-      books.push(book);
+  async activeNote(id: IndexableType) {
+    this.options.update((await this.getOptions())!.id!, {
+      activeNoteId: id
     })
-    await this.books.bulkPut(books);
   }
 
-  async addNewNote() {
+  async upsertNote(content: string, id?: IndexableType) {
     const activeBook = await this.getActiveBook();
-    await this.notes.add({
-      content: '',
-      hash: activeBook!.hash,
-      createAt: getDateNow(),
-    });
+    let note = await this.notes.filter(it => it.id === id).first();
+    if (!note) {
+      note = {
+        content,
+        bookId: activeBook?.id!,
+        hash: activeBook!.hash,
+        createAt: getDateNow(),
+        updateAt: getDateNow(),
+      };
+      const id = await this.notes.add(note);
+      await this.activeNote(id);
+    } else {
+      await this.notes.update(note, {
+        content,
+        updateAt: getDateNow(),
+      });
+    }
   }
+
 }
 
 export const db = new NoteBookDexie(); 

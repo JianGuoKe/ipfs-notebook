@@ -39,3 +39,7 @@ body {
 .not-select {
   user-select: none;
 }
+
+h4 {
+  margin-block-start: 0;
+}

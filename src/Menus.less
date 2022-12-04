@@ -1,12 +1,35 @@
+@pcolor: #ebc33f;
+
 .ipfs-menus {
   height: 100%;
 
   .ant-list-header {
-    padding: 0 0 12px 0;
+    padding: 0;
     border-bottom: none;
 
     .ant-input-search {
       padding: 0 5px;
     }
+  }
+
+  .ant-list-item-meta-title {
+    a {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .ant-list-item-meta.active {
+    .ant-list-item-meta-title {
+      a {
+        color: @pcolor;
+      }
+    }
+  }
+
+  .datetime {
+    padding: 0 5px 0 0;
+    font-weight: 500;
   }
 }

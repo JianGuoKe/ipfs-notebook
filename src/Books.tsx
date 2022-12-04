@@ -48,7 +48,7 @@ export default function ({
     }, [] as string[]);
     let bookList = groups?.map((g) => {
       return getItem(
-        'Group',
+        g.split('.').slice(-2, 1).join('').toUpperCase(),
         g,
         null,
         books
