@@ -1,6 +1,6 @@
 import { Button, InputRef, Modal, Input, message } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { db } from './db';
+import { db } from './Data';
 
 export default function ({
   open,
@@ -21,7 +21,7 @@ export default function ({
 
   async function addNewHash() {
     try {
-      await db.createEmptyBook('新记事本');
+      await db.createEmptyBook('');
       onClose();
     } catch (err) {
       message.error((err as Error).message);

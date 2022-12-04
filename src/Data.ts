@@ -2,34 +2,32 @@ import Dexie, { liveQuery, Table } from 'dexie';
 
 export interface Book {
   id?: number;
-  title: string;
+  title?: string;
   url: string;   // 不支持本地存储，必须有url和hash
-  hash: string;
+  hash?: string;
   enabled: boolean;
   createAt: Date;
   deleteAt?: Date;
+  syncAt?: Date;   // 同步ipfs文件完成时间
   keyId?: number;
   isActived: boolean;
   activedAt?: Date;
 }
 
 export interface Menu {
-  id?: number;
   title: string;
-  bookId: number;
-  createAt: Date;
-  updateAt?: Date;
-  deleteAt?: Date;
-  summary?: string;
+  lastAt: Date;
+  summary: string;
 }
 
 export interface Note {
   id?: number;
   content: string;
-  hash: string;
+  hash?: string;
   createAt: Date;
   updateAt?: Date;
   deleteAt?: Date;
+  syncAt?: Date;
   keyId?: number;
 }
 
@@ -45,6 +43,7 @@ export interface Key {
 
 export interface Node {
   url: string;
+  createAt: Date
 }
 
 export interface Option {
@@ -63,68 +62,101 @@ export class NoteBookDexie extends Dexie {
   // 'books' is added by dexie when declaring the stores()
   // We just tell the typing system this is the case
   books!: Table<Book>;
-  menus!: Table<Menu>;
   notes!: Table<Note>;
   keys!: Table<Key>;
   options!: Table<Option>;
   nodes!: Table<Node>;
 
-  private _activeBook?: Book;
-  private _currentNode?: Node;
+  getCurrentNode() {
+    return this.nodes.toCollection().first();
+  }
+
+  getActiveBook() {
+    return this.books.filter(it => it.isActived).first();
+  }
 
   constructor() {
     super('jianguoke.notebook');
-    this.version(4).stores({
+    this.version(5).stores({
       books: '++id, title, url, hash, enabled, createAt, deleteAt, keyId, isActived, activedAt',// Primary key and indexed props
       menus: '++id, title, bookId, summary, createAt, updateAt, deleteAt',
       notes: '++id, content, bookId, keyId, updateAt, createAt, deleteAt',
       keys: '++id, name, pubKey, priKey, enabled, createAt, deleteAt',
       options: 'bookWidth, bookVisible, menuWidth, menuVisible',
-      nodes: 'url',
+      nodes: 'url, createAt',
     });
-    liveQuery(() => this.books.filter(book => book.isActived).first()).subscribe(book => {
-      this._activeBook = book;
-    });
-    liveQuery(() => this.nodes.filter(node => !!node.url).first()).subscribe(node => {
-      this._currentNode = node;
-    })
+    this.init();
   }
 
-  get currentNode() {
-    return this._currentNode;
-  }
-
-  get activeBook() {
-    return this._activeBook;
+  async init() {
+    if (await this.nodes.count() <= 0) {
+      await this.nodes.add({
+        url: 'https://jianguoke.cn/ipfs',
+        createAt: getDateNow()
+      })
+    }
   }
 
   async createEmptyBook(title: string) {
-    if (!this.currentNode?.url) {
+    const currentNode = await this.getCurrentNode();
+    if (!currentNode?.url) {
       throw new Error('IPFS接入节点未知,需要再设置中添加')
     }
-    // careate ipfs hash
-    const hash = ''
-    await this.books.each(book => {
-      book.isActived = false;
-    })
-    await this.books.add({
-      ...this.currentNode,
-      hash,
+    const id = await this.books.add({
+      ...currentNode,
       enabled: true,
       createAt: getDateNow(),
-      isActived: true,
+      isActived: false,
       title
+    });
+    await this.books.each(book => {
+      book.isActived = book.id === id;
     })
   }
 
   async addBook(hash: string) {
+    const currentNode = await this.getCurrentNode();
+    if (!currentNode?.url) {
+      throw new Error('IPFS接入节点未知,需要再设置中添加')
+    }
+    const id = await this.books.add({
+      ...currentNode,
+      hash,
+      enabled: true,
+      createAt: getDateNow(),
+      isActived: false,
+    });
+    await this.books.each(book => {
+      book.isActived = book.id === id;
+    })
+  }
 
+  async deleteBook(id: number) {
+    const activeBook = await this.getActiveBook();
+    const needChange = activeBook?.id === id;
+    await this.books.delete(id);
+    const books = this.books.toCollection();
+    if (needChange && await books.count() > 0) {
+      await this.books.update((await books.first())!.id!, {
+        isActived: true
+      });
+    }
+  }
+
+  async changeBook(id: number) {
+    const books: Book[] = [];
+    await this.books.each(book => {
+      book.isActived = book.id === id
+      books.push(book);
+    })
+    await this.books.bulkPut(books);
   }
 
   async addNewNote() {
+    const activeBook = await this.getActiveBook();
     await this.notes.add({
       content: '',
-      hash: this.activeBook!.hash,
+      hash: activeBook!.hash,
       createAt: getDateNow(),
     });
   }

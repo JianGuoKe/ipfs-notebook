@@ -9,7 +9,7 @@ import MenuList from './Menus';
 import NoteEditor from './NoteEditor';
 import PPKModal from './PPKModal';
 import FolderModal from './FolderModal';
-import { db } from './db';
+import { db } from './Data';
 import { useLiveQuery } from 'dexie-react-hooks';
 const { Content } = Layout;
 
@@ -19,7 +19,6 @@ export default function NoteBook(): React.ReactElement {
   const [createBook, setCreateBook] = useState('add');
   const [openBook, setOpenBook] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
-  const books = useLiveQuery(() => db.books.toArray(), []);
 
   const showModal = () => {
     setOpenPPK(true);
@@ -47,10 +46,12 @@ export default function NoteBook(): React.ReactElement {
 
   useEffect(() => {}, [bookVisible]);
   useEffect(() => {
-    if (!books || books?.length <= 0) {
-      showBookModal('create');
-    }
-  }, [books]);
+    (async function () {
+      if ((await db.books.count()) <= 0) {
+        showBookModal('create');
+      }
+    })();
+  }, []);
 
   return (
     <>

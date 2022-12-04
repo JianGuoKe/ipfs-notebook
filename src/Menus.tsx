@@ -8,10 +8,11 @@ import {
 import { Button, ConfigProvider, List, Input } from 'antd';
 import dayjs from 'dayjs';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from './db';
+import { db } from './Data';
 import './Menus.less';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useState } from 'react';
+import VirtualList from 'rc-virtual-list';
 dayjs.extend(relativeTime);
 
 const customizeRenderEmpty = () => (
@@ -32,28 +33,42 @@ export default function ({
 }) {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [limit, setLimit] = useState(20);
+  const activeBook = useLiveQuery(() => db.getActiveBook(), []);
   const bookMenus = useLiveQuery(async () => {
-    return await db.menus
-      .filter(
-        (menu) =>
-          menu.bookId === db.activeBook?.id &&
-          (searchText ? menu.summary?.includes(searchText) || false : true)
-      )
-      .toArray();
+    return (
+      await db.notes
+        .filter(
+          (note) =>
+            note.hash === activeBook?.hash &&
+            (searchText ? note.content.includes(searchText) || false : true)
+        )
+        .limit(limit)
+        .toArray()
+    ).map((it) => {
+      const ct = it.content.split('\n');
+      return {
+        title: ct[0],
+        lastAt: it.updateAt || it.createAt || it.deleteAt,
+        summary: ct[1].trim(),
+      };
+    });
   }, []);
 
   function addNewNote() {
-    if (!db.activeBook) {
+    if (!activeBook) {
       return onCreateBook('add');
     }
+  }
+
+  function onScroll() {
+    setLimit(limit + 20);
   }
 
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <List
         className="ipfs-menus"
-        itemLayout="horizontal"
-        dataSource={bookMenus}
         header={
           <>
             <div className="btns">
@@ -89,20 +104,31 @@ export default function ({
             )}
           </>
         }
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={<a href="https://ant.design">{item.title}</a>}
-              description={
-                <>
-                  <span>{dayjs(item.updateAt || item.createAt).fromNow()}</span>
-                  <span>{item.summary}</span>
-                </>
-              }
-            />
-          </List.Item>
+      >
+        {bookMenus && bookMenus.length > 0 && (
+          <VirtualList
+            data={bookMenus}
+            height={47}
+            itemHeight={47}
+            itemKey="email"
+            onScroll={onScroll}
+          >
+            {(item) => (
+              <List.Item>
+                <List.Item.Meta
+                  title={<a>{item.title}</a>}
+                  description={
+                    <>
+                      <span>{dayjs(item.lastAt).fromNow()}</span>
+                      <span>{item.summary}</span>
+                    </>
+                  }
+                />
+              </List.Item>
+            )}
+          </VirtualList>
         )}
-      />
+      </List>
     </ConfigProvider>
   );
 }

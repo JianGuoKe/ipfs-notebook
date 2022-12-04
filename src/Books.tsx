@@ -2,7 +2,7 @@ import { FolderOutlined, PlusOutlined } from '@ant-design/icons';
 import { Menu, MenuProps } from 'antd';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
-import { db } from './db';
+import { db } from './Data';
 import './Books.less';
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -30,13 +30,14 @@ export default function ({
   addVisible: boolean;
   onCreateBook: (mode: string) => void;
 }) {
-  const books = useLiveQuery(() => db.books.toArray(), []);
+  const books = useLiveQuery(() => db.books.toArray());
+  const activeBook = useLiveQuery(() => db.getActiveBook());
 
   const onClick: MenuProps['onClick'] = (e) => {};
 
   const items: MenuProps['items'] = useMemo(() => {
     const groups = books?.reduce((servers, it) => {
-      if (!servers.includes(it.url)) {
+      if (servers.every((hostName) => !it.url.includes(hostName))) {
         try {
           servers.push(new URL(it.url).hostname);
         } catch (err) {
@@ -45,19 +46,21 @@ export default function ({
       }
       return servers;
     }, [] as string[]);
-    let menu = groups?.map((g) => {
+    let bookList = groups?.map((g) => {
       return getItem(
         'Group',
         g,
         null,
         books
           ?.filter((it) => it.url?.includes(g))
-          .map((it) => getItem(it.title || g, g, <FolderOutlined />)),
+          .map((it) =>
+            getItem(it.title || '记事本(同步中...)', it.id!, <FolderOutlined />)
+          ),
         'group'
       );
     });
-    if (!menu || menu?.length <= 0) {
-      menu = [
+    if (!bookList || bookList?.length <= 0) {
+      bookList = [
         getItem(
           <span>
             无记事本
@@ -74,7 +77,7 @@ export default function ({
         ),
       ];
     }
-    return menu;
+    return bookList;
   }, [books, addVisible]);
 
   return (
@@ -83,8 +86,8 @@ export default function ({
         theme="dark"
         onClick={onClick}
         className="ipfs-books"
-        defaultSelectedKeys={['1']}
-        defaultOpenKeys={['sub1']}
+        selectedKeys={activeBook?.id ? [activeBook?.id?.toString()] : []}
+        onSelect={(e) => db.changeBook(parseInt(e.key))}
         mode="inline"
         items={items}
       />
