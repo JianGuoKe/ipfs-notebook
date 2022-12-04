@@ -1,17 +1,24 @@
 import { Button, InputRef, Modal, Input } from 'antd';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { db } from './Data';
 
 export default function ({ open, onClose }: any) {
   const inputPKRef = useRef<InputRef>(null);
   const inputPriRef = useRef<InputRef>(null);
-  function addNewKey() {
-    // TODO
+  const [priKey, setPriKey] = useState('');
+  const [pubKey, setPubKey] = useState('');
+
+  async function addNewKey() {
+    await db.addKey(priKey, pubKey);
+    setPriKey('');
+    setPubKey('');
     onClose();
   }
   return (
     <Modal
       open={open}
       title="添加秘钥"
+      width={620}
       onOk={addNewKey}
       onCancel={onClose}
       footer={[
@@ -34,6 +41,8 @@ export default function ({ open, onClose }: any) {
         ref={inputPKRef}
         rows={6}
         placeholder="-----BEGIN PUBLIC KEY-----"
+        value={pubKey}
+        onChange={(e) => setPubKey(e.target.value)}
         onFocus={() =>
           inputPKRef.current!.focus({
             cursor: 'all',
@@ -48,6 +57,8 @@ export default function ({ open, onClose }: any) {
         ref={inputPriRef}
         rows={6}
         placeholder="-----BEGIN RSA PRIVATE KEY-----"
+        value={priKey}
+        onChange={(e) => setPriKey(e.target.value)}
         onFocus={() =>
           inputPriRef.current!.focus({
             cursor: 'all',

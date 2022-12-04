@@ -4,8 +4,9 @@ import {
   SearchOutlined,
   EditOutlined,
   SmileOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
-import { Button, ConfigProvider, List, Input } from 'antd';
+import { Button, ConfigProvider, List, Input, Switch } from 'antd';
 import dayjs from 'dayjs';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './Data';
@@ -19,7 +20,7 @@ dayjs.extend(relativeTime);
 const customizeRenderEmpty = () => (
   <div style={{ textAlign: 'center' }}>
     <SmileOutlined style={{ fontSize: 20 }} />
-    <p>暂无日志</p>
+    <p>暂无记录</p>
   </div>
 );
 
@@ -52,6 +53,7 @@ export default function ({
   const [limit, setLimit] = useState(getBestCount());
   const activeNote = useLiveQuery(() => db.getActiveNote());
   const activeBook = useLiveQuery(() => db.getActiveBook(), []);
+  const [delMode, setDelMode] = useState(false);
   const listRef = useRef<ListRef>(null);
   const bookMenus = useLiveQuery(async () => {
     return (
@@ -70,6 +72,7 @@ export default function ({
       const txts = it.content.match(regP) || [];
       return {
         noteId: it.id,
+        ok: !!it.hash,
         title: (txts[0] || '').replace(reg, ''),
         lastAt: it.updateAt || it.createAt || it.deleteAt,
         summary: txts?.slice(1).join('\n').replace(reg, '').substring(0, 20),
@@ -95,7 +98,7 @@ export default function ({
     await db.upsertNote('');
   }
 
-  function onScroll(e) {
+  function onScroll(e: any) {
     if (
       e.currentTarget.scrollHeight - e.currentTarget.scrollTop ===
       getContainerHeight()
@@ -122,17 +125,23 @@ export default function ({
               <Button
                 type="text"
                 className="right"
-                title="搜索文本"
-                icon={<SearchOutlined />}
-                onClick={() => setSearchVisible(!searchVisible)}
-              ></Button>
-              <Button
-                type="text"
-                className="right"
                 title="新增文本"
                 icon={<EditOutlined />}
                 onClick={() => addNewNote()}
               ></Button>
+              <Button
+                type="text"
+                className="right"
+                title="搜索文本"
+                icon={<SearchOutlined />}
+                onClick={() => setSearchVisible(!searchVisible)}
+              ></Button>
+              <div className="button right">
+                <Switch
+                  size="small"
+                  onChange={(checked) => setDelMode(checked)}
+                />
+              </div>
             </div>
             {searchVisible && (
               <Input.Search
@@ -156,6 +165,17 @@ export default function ({
             {(item) => (
               <List.Item onClick={() => db.activeNote(item.noteId!)}>
                 <List.Item.Meta
+                  avatar={
+                    delMode && (
+                      <Button
+                        type="text"
+                        className="right"
+                        title="删除记录"
+                        icon={<DeleteOutlined />}
+                        onClick={() => db.deleteNote(item.noteId!)}
+                      ></Button>
+                    )
+                  }
                   className={item.noteId === activeNote?.id ? 'active' : ''}
                   title={<a title={item.title}>{item.title || '无标题'}</a>}
                   description={
@@ -163,6 +183,7 @@ export default function ({
                       <span className="datetime">
                         {dayjs(item.lastAt).locale('zh-cn').fromNow()}
                       </span>
+                      {!item.ok && <span className="status">同步中...</span>}
                       <span>{item.summary}</span>
                     </>
                   }

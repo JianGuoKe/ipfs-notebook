@@ -38,9 +38,13 @@
         background: none;
       }
 
-      button {
+      > button,
+      > .button {
+        display: inline;
         line-height: 31px;
         height: 41px;
+        padding: 4px;
+        border: none;
 
         &:hover {
           border-color: #fff;
@@ -51,7 +55,10 @@
         &:focus {
           outline: none;
         }
+      }
 
+      > button,
+      > .button {
         &.right {
           float: right;
         }

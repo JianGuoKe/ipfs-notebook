@@ -39,7 +39,7 @@ export interface Key {
   priKey: string;
   enabled: boolean;
   createAt: Date;
-  deleteAt: Date;
+  deleteAt?: Date;
 }
 
 export interface Node {
@@ -150,7 +150,7 @@ export class NoteBookDexie extends Dexie {
       books.push(book);
     });
     await this.books.bulkPut(books);
-    this.activeNote(null);
+    this.activeNote(-1);
   }
 
   async deleteBook(id: IndexableType) {
@@ -190,6 +190,24 @@ export class NoteBookDexie extends Dexie {
         updateAt: getDateNow(),
       });
     }
+  }
+
+  async deleteNote(id: IndexableType) {
+    await this.notes.delete(id);
+  }
+
+  async addKey(priKey: string, pubKey: string) {
+    await this.keys.add({
+      name: '秘钥',
+      priKey,
+      pubKey,
+      enabled: true,
+      createAt: getDateNow()
+    })
+  }
+
+  async deleteKey(id: IndexableType) {
+    await this.keys.delete(id);
   }
 
 }
