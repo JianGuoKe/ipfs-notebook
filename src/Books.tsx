@@ -25,10 +25,10 @@ function getItem(
 
 export default function ({
   addVisible,
-  onCreateFolder,
+  onCreateBook,
 }: {
   addVisible: boolean;
-  onCreateFolder: (mode: string) => void;
+  onCreateBook: (mode: string) => void;
 }) {
   const books = useLiveQuery(() => db.books.toArray(), []);
 
@@ -51,7 +51,7 @@ export default function ({
         g,
         null,
         books
-          ?.filter((it) => it.url.includes(g))
+          ?.filter((it) => it.url?.includes(g))
           .map((it) => getItem(it.title || g, g, <FolderOutlined />)),
         'group'
       );
@@ -63,7 +63,7 @@ export default function ({
             无记事本
             {!addVisible && (
               <PlusOutlined
-                onClick={() => onCreateFolder('create')}
+                onClick={() => onCreateBook('create')}
               ></PlusOutlined>
             )}
           </span>,

@@ -11,15 +11,14 @@ import PPKModal from './PPKModal';
 import FolderModal from './FolderModal';
 import { db } from './db';
 import { useLiveQuery } from 'dexie-react-hooks';
-
 const { Content } = Layout;
 
 export default function NoteBook(): React.ReactElement {
-  const [open, setOpen] = useState(false);
   const [bookVisible, setBookVisible] = useState(true);
   const [openPPK, setOpenPPK] = useState(false);
-  const [createFolder, setCreateFolder] = useState('add');
-  const [openFolder, setOpenFolder] = useState(false);
+  const [createBook, setCreateBook] = useState('add');
+  const [openBook, setOpenBook] = useState(false);
+  const [openSettings, setOpenSettings] = useState(false);
   const books = useLiveQuery(() => db.books.toArray(), []);
 
   const showModal = () => {
@@ -30,26 +29,26 @@ export default function NoteBook(): React.ReactElement {
     setOpenPPK(false);
   };
 
-  const showFolderModal = (createFolder = 'add') => {
-    setCreateFolder(createFolder);
-    setOpenFolder(true);
+  const showBookModal = (createFolder = 'add') => {
+    setCreateBook(createFolder);
+    setOpenBook(true);
   };
   const hideFolderModal = () => {
-    setOpenFolder(false);
+    setOpenBook(false);
   };
 
   const showDrawer = () => {
-    setOpen(true);
+    setOpenSettings(true);
   };
 
   const onClose = () => {
-    setOpen(false);
+    setOpenSettings(false);
   };
 
   useEffect(() => {}, [bookVisible]);
   useEffect(() => {
     if (!books || books?.length <= 0) {
-      showFolderModal('create');
+      showBookModal('create');
     }
   }, [books]);
 
@@ -59,8 +58,8 @@ export default function NoteBook(): React.ReactElement {
         {bookVisible && (
           <DragSider onClose={() => setBookVisible(false)}>
             <BookMenu
-              addVisible={openFolder}
-              onCreateFolder={showFolderModal}
+              addVisible={openBook}
+              onCreateBook={showBookModal}
             ></BookMenu>
             <Button
               className="ipfs-notebook-settings"
@@ -76,10 +75,11 @@ export default function NoteBook(): React.ReactElement {
             className="ipfs-notebook-menu"
             defaultWidth={300}
             minWidth={150}
-            onClose={() => setOpen(false)}
+            onClose={() => setOpenSettings(false)}
           >
             <MenuList
               bookVisible={bookVisible}
+              onCreateBook={showBookModal}
               onBookVisibleChange={setBookVisible}
             ></MenuList>
           </DragSider>
@@ -87,16 +87,18 @@ export default function NoteBook(): React.ReactElement {
             <NoteEditor></NoteEditor>
           </Content>
         </Layout>
-        <Drawer title="设置" placement="right" onClose={onClose} open={open}>
-          <Settings
-            onPPKAdd={showModal}
-            onFolderAdd={showFolderModal}
-          ></Settings>
+        <Drawer
+          title="设置"
+          placement="right"
+          onClose={onClose}
+          open={openSettings}
+        >
+          <Settings onPPKAdd={showModal} onFolderAdd={showBookModal}></Settings>
         </Drawer>
       </Layout>
       <FolderModal
-        open={openFolder}
-        mode={createFolder}
+        open={openBook}
+        mode={createBook}
         onClose={hideFolderModal}
       ></FolderModal>
       <PPKModal open={openPPK} onClose={hideModal}></PPKModal>
