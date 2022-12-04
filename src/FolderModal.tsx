@@ -1,5 +1,5 @@
 import { Button, InputRef, Modal, Input } from 'antd';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function ({
   open,
@@ -11,22 +11,38 @@ export default function ({
   onClose: () => void;
 }) {
   const inputPriRef = useRef<InputRef>(null);
+  const [newMode, setMode] = useState(mode);
+
+  useEffect(() => {
+    setMode(mode);
+  }, [mode]);
+
   function addNewKey() {
     // TODO
     onClose();
   }
-  const footer = [
-    <Button key="back" onClick={onClose}>
-      取消
-    </Button>,
-    <Button key="new" type={mode === 'create' ? 'primary' : 'default'}>
-      创建新文件夹
-    </Button>,
-  ];
-  if (mode === 'add') {
+  const footer = [];
+  if (newMode === 'add') {
     footer.push(
+      <Button key="new">创建新文件夹</Button>,
+      <Button key="back" onClick={onClose}>
+        取消
+      </Button>,
       <Button key="submit" type="primary" onClick={addNewKey}>
         确定添加
+      </Button>
+    );
+  }
+  if (newMode === 'create') {
+    footer.push(
+      <Button key="submit" onClick={() => setMode('add')}>
+        添加文件夹
+      </Button>,
+      <Button key="back" onClick={onClose}>
+        取消
+      </Button>,
+      <Button key="new" type={'primary'}>
+        创建新文件夹
       </Button>
     );
   }
@@ -39,7 +55,7 @@ export default function ({
       footer={footer}
     >
       <p>添加一个去中心化网络(IPFS)上的文件夹作为当前记事本</p>
-      {mode === 'add' && (
+      {newMode === 'add' && (
         <Input
           ref={inputPriRef}
           placeholder="文件夹Hash"

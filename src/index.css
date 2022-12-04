@@ -35,3 +35,7 @@ body {
 .ant-modal-root .ant-modal-wrap {
   z-index: 2000;
 }
+
+.not-select {
+  user-select: none;
+}

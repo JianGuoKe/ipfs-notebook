@@ -57,7 +57,7 @@ export default function NoteBook(): React.ReactElement {
     <>
       <Layout hasSider={true} className="ipfs-notebook">
         {bookVisible && (
-          <DragSider>
+          <DragSider onClose={() => setBookVisible(false)}>
             <BookMenu
               addVisible={openFolder}
               onCreateFolder={showFolderModal}
@@ -72,7 +72,12 @@ export default function NoteBook(): React.ReactElement {
           </DragSider>
         )}
         <Layout hasSider={true}>
-          <DragSider className="ipfs-notebook-menu" defaultWidth={300}>
+          <DragSider
+            className="ipfs-notebook-menu"
+            defaultWidth={300}
+            minWidth={150}
+            onClose={() => setOpen(false)}
+          >
             <MenuList
               bookVisible={bookVisible}
               onBookVisibleChange={setBookVisible}

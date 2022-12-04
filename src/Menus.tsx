@@ -8,7 +8,6 @@ import {
 import { Button, ConfigProvider, List } from 'antd';
 import dayjs from 'dayjs';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useState } from 'react';
 import { db } from './db';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);

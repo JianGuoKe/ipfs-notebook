@@ -1,5 +1,5 @@
 import { FolderOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Menu, MenuProps } from 'antd';
+import { Menu, MenuProps } from 'antd';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { db } from './db';
@@ -63,7 +63,7 @@ export default function ({
             无记事本
             {!addVisible && (
               <PlusOutlined
-                onClick={() => onCreateFolder('add')}
+                onClick={() => onCreateFolder('create')}
               ></PlusOutlined>
             )}
           </span>,
