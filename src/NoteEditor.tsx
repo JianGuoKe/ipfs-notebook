@@ -101,7 +101,7 @@ export default function () {
       value={value}
       theme="snow"
       onChange={updateNote}
-      onKeyPress={startEdit}
+      onKeyDown={startEdit}
       onBlur={(a, b, editor) => stopEdit(editor.getHTML())}
     ></NoteReactQuill>
   );
