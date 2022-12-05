@@ -4,6 +4,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import ScrollView from 'react-custom-scrollbars';
 import { db } from './Data';
+import './NoteEditor.less';
 
 class NoteReactQuill extends ReactQuill {
   getEditorConfig(): ReactQuill.QuillOptions {
@@ -25,7 +26,7 @@ class NoteReactQuill extends ReactQuill {
       },
     };
     return (
-      <>
+      <div className="ipfs-editor">
         <div className="editToolbar">
           <span className="ql-formats">
             <select className="ql-header">
@@ -61,7 +62,7 @@ class NoteReactQuill extends ReactQuill {
         <ScrollView className="editContainer" autoHide>
           <div className="editContainerContent" {...properties}></div>
         </ScrollView>
-      </>
+      </div>
     );
   }
 }

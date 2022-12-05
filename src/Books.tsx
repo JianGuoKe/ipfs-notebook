@@ -17,6 +17,7 @@ function getItem(
   return {
     key,
     icon,
+    title: label,
     children,
     label,
     type,
@@ -54,7 +55,11 @@ export default function ({
         books
           ?.filter((it) => it.url?.includes(g))
           .map((it) =>
-            getItem(it.title || '记事本(同步中...)', it.id!, <FolderOutlined />)
+            getItem(
+              (it.title || '记事本') + (it.syncAt ? '' : '(同步中...)'),
+              it.id!,
+              <FolderOutlined />
+            )
           ),
         'group'
       );

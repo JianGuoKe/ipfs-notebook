@@ -153,6 +153,12 @@ export class NoteBookDexie extends Dexie {
     this.activeNote(-1);
   }
 
+  async updateBookTitle(book: Book) {
+    await this.books.update(book, {
+      title: book.title
+    })
+  }
+
   async deleteBook(id: IndexableType) {
     const activeBook = await this.getActiveBook();
     const needChange = activeBook?.id === id;
