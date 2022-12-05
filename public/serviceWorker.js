@@ -1,5 +1,5 @@
 // cache名, 在控制台Application的CaChe下可以看到
-const cacheName = "penueling";
+const cacheName = "jianguoke.notebook";
 // cache文件
 const cacheFiles = ["/", "/index.html", "/manifest.json", "/favicon.ico", "/favicon.png", "/favicon.svg"];
 
