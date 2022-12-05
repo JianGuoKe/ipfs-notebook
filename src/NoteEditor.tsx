@@ -5,7 +5,7 @@ import 'react-quill/dist/quill.snow.css';
 import ScrollView from 'react-custom-scrollbars';
 import { db } from './Data';
 import './NoteEditor.less';
-import { Button, Divider } from 'antd';
+import { Button } from 'antd';
 import { DesktopOutlined } from '@ant-design/icons';
 
 let deferredPrompt: any = null;
@@ -81,14 +81,16 @@ class NoteReactQuill extends ReactQuill {
             <button type="button" className="ql-clean"></button>
           </span>
 
-          <span className="ql-formats">
-            <Button
-              title="点击安装桌面版"
-              className="pwsinstall"
-              icon={<DesktopOutlined />}
-              onClick={() => addToDesktop()}
-            ></Button>
-          </span>
+          {deferredPrompt && (
+            <span className="ql-formats">
+              <Button
+                title="点击安装桌面版"
+                className="pwsinstall"
+                icon={<DesktopOutlined />}
+                onClick={() => addToDesktop()}
+              ></Button>
+            </span>
+          )}
         </div>
         <div className="editContainer">
           <ScrollView autoHide>
