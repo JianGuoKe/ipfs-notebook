@@ -69,8 +69,9 @@ export default function DragSider(props: {
   className?: string | undefined;
   children: JSX.Element | JSX.Element[];
   onClose?: () => void;
+  onWidthChange?: (width: number) => void;
 }): React.ReactElement {
-  const { children, onClose, minWidth = 50 } = props;
+  const { children, onClose, minWidth = 50, onWidthChange } = props;
 
   const [notSelect, setNotSelect] = useState(false);
   const [navWidth, setNavWidth] = useState(props.defaultWidth || 200);
@@ -81,6 +82,8 @@ export default function DragSider(props: {
   useEffect(() => {
     if (navWidth <= minWidth + minWidth * 0.1 && onClose) {
       onClose();
+    } else {
+      onWidthChange && onWidthChange(navWidth);
     }
   }, [notSelect]);
 

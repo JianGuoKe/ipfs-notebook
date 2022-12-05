@@ -15,6 +15,10 @@ let deferredPrompt: any = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  const pwa = document.querySelector('#pwsinstallql') as any;
+  if (pwa) {
+    pwa.style.display = 'inline-block';
+  }
 });
 
 // 安装完成后触发,即点击安装弹窗中的“安装”后被触发
@@ -81,16 +85,18 @@ class NoteReactQuill extends ReactQuill {
             <button type="button" className="ql-clean"></button>
           </span>
 
-          {deferredPrompt && (
-            <span className="ql-formats">
-              <Button
-                title="点击安装桌面版"
-                className="pwsinstall"
-                icon={<DesktopOutlined />}
-                onClick={() => addToDesktop()}
-              ></Button>
-            </span>
-          )}
+          <span
+            className="ql-formats"
+            id="pwsinstallql"
+            style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
+          >
+            <Button
+              title="点击安装桌面版"
+              className="pwsinstall"
+              icon={<DesktopOutlined />}
+              onClick={() => addToDesktop()}
+            ></Button>
+          </span>
         </div>
         <div className="editContainer">
           <ScrollView autoHide>

@@ -14,7 +14,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 const { Content } = Layout;
 
 export default function NoteBook(): React.ReactElement {
-  const [bookVisible, setBookVisible] = useState(true);
+  const options = useLiveQuery(() => db.getOptions());
   const [openPPK, setOpenPPK] = useState(false);
   const [createBook, setCreateBook] = useState('add');
   const [openBook, setOpenBook] = useState(false);
@@ -44,7 +44,6 @@ export default function NoteBook(): React.ReactElement {
     setOpenSettings(false);
   };
 
-  useEffect(() => {}, [bookVisible]);
   useEffect(() => {
     (async function () {
       if ((await db.books.count()) <= 0) {
@@ -56,8 +55,12 @@ export default function NoteBook(): React.ReactElement {
   return (
     <>
       <Layout hasSider={true} className="ipfs-notebook">
-        {bookVisible && (
-          <DragSider onClose={() => setBookVisible(false)}>
+        {options?.bookVisible && (
+          <DragSider
+            defaultWidth={options?.bookWidth}
+            onClose={() => db.setBookVisible(false)}
+            onWidthChange={(width) => db.setBookWidth(width)}
+          >
             <BookMenu
               addVisible={openBook}
               onCreateBook={showBookModal}
@@ -74,14 +77,14 @@ export default function NoteBook(): React.ReactElement {
         <Layout hasSider={true}>
           <DragSider
             className="ipfs-notebook-menu"
-            defaultWidth={300}
+            defaultWidth={options?.menuWidth || 300}
+            onWidthChange={(width) => db.setMenuWidth(width)}
             minWidth={150}
-            onClose={() => setOpenSettings(false)}
           >
             <MenuList
-              bookVisible={bookVisible}
+              bookVisible={!!options?.bookVisible}
               onCreateBook={showBookModal}
-              onBookVisibleChange={setBookVisible}
+              onBookVisibleChange={(v) => db.setBookVisible(v)}
             ></MenuList>
           </DragSider>
           <Content>

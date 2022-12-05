@@ -113,6 +113,28 @@ export class NoteBookDexie extends Dexie {
     }
   }
 
+  async setBookWidth(bookWidth: number) {
+    const opt = await this.getOptions();
+    await this.options.update(opt!.id!, {
+      bookWidth
+    });
+  }
+
+  async setBookVisible(bookVisible: boolean) {
+    const opt = await this.getOptions();
+    await this.options.update(opt!.id!, {
+      bookVisible
+    });
+  }
+
+  async setMenuWidth(menuWidth: number) {
+    const opt = await this.getOptions();
+    await this.options.update(opt!.id!, {
+      menuWidth
+    });
+  }
+
+
   async createEmptyBook(title: string) {
     const currentNode = await this.getCurrentNode();
     if (!currentNode?.url) {
