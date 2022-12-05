@@ -13,14 +13,14 @@ function getItem(
   icon?: React.ReactNode,
   children?: MenuItem[],
   type?: 'group'
-): MenuItem {
+): any {
   return {
     key,
     icon,
     title: label,
     children,
     label,
-    type,
+    type: type,
   };
 }
 

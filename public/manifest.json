@@ -1,0 +1,27 @@
+{
+  "name": "记事本 | 坚果壳",
+  "short_name": "记事本",
+  "start_url": "/?pwa=true",
+  "display": "standalone",
+  "background_color": "#fff",
+  "description": "一个去中心化的极简记事本",
+  "theme_color": "#ebc33f",
+  "lang": "zh-cn",
+  "url": "https://jianguoke.cn/notebook",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "200x200",
+      "type": "image/png"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "web"
+    },
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=jianguoke.notebook"
+    }
+  ]
+}
