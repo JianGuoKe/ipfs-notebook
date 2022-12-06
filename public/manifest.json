@@ -1,11 +1,11 @@
 {
   "name": "",
   "short_name": "记事本 | 坚果壳",
-  "start_url": "/",
   "display": "standalone",
   "background_color": "#fff",
   "description": "一个去中心化的极简记事本",
   "theme_color": "#ebc33f",
+  "start_url": "/",
   "lang": "zh-cn",
   "url": "https://note.jianguoke.cn",
   "icons": [
@@ -18,10 +18,6 @@
   "related_applications": [
     {
       "platform": "web"
-    },
-    {
-      "platform": "play",
-      "url": "https://play.google.com/store/apps/details?id=jianguoke.notebook"
     }
   ]
 }

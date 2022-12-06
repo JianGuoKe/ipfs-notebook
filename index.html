@@ -7,8 +7,24 @@
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="<%- manifest %>" />
     <title>记事本 | 坚果壳</title>
+    <script>
+      // serviceWorker
+      // 检查serviceWorker属性是否可用
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker
+            .register('<%- serviceWorker %>')
+            .then((res) => {
+              console.log('service worker registered');
+            })
+            .catch((err) => {
+              console.log('service worker not registered', err);
+            });
+        });
+      }
+    </script>
     <style type="text/css">
       :root {
         font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
@@ -51,22 +67,6 @@
         height: 100%;
       }
     </style>
-    <script>
-      // serviceWorker
-      // 检查serviceWorker属性是否可用
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker
-            .register('/serviceWorker.js')
-            .then((res) => {
-              console.log('service worker registered');
-            })
-            .catch((err) => {
-              console.log('service worker not registered', err);
-            });
-        });
-      }
-    </script>
   </head>
   <body>
     <div id="root">

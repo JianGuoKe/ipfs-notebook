@@ -1,7 +1,7 @@
 // cache名, 在控制台Application的CaChe下可以看到
 const cacheName = "jianguoke.notebook";
 // cache文件
-const cacheFiles = [];
+const cacheFiles = [/* CACHEFILES */];
 
 /**
  * 安装 Service Worker
