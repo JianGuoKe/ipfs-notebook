@@ -115,7 +115,10 @@ export class NoteBookDexie extends Dexie {
 
   async setBookWidth(bookWidth: number) {
     const opt = await this.getOptions();
-    await this.options.update(opt!.id!, {
+    if (!opt) {
+      return;
+    }
+    await this.options.update(opt.id!, {
       bookWidth
     });
   }
