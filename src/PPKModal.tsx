@@ -1,6 +1,7 @@
 import { Button, InputRef, Modal, Input } from 'antd';
 import { useRef, useState } from 'react';
 import { db } from './Data';
+import keypair from 'keypair';
 
 export default function ({ open, onClose }: any) {
   const inputPKRef = useRef<InputRef>(null);
@@ -14,6 +15,15 @@ export default function ({ open, onClose }: any) {
     setPubKey('');
     onClose();
   }
+
+  function genKeys() {
+    const keys = keypair({
+      bits: 2048,
+    });
+    setPriKey(keys.private);
+    setPubKey(keys.public);
+  }
+
   return (
     <Modal
       open={open}
@@ -33,9 +43,9 @@ export default function ({ open, onClose }: any) {
       <p>
         公钥设置,公钥用于加密数据存储,如果不设置公钥,数据将以明文存储
         <strong>不建议</strong>。 点击
-        <a href="http://tools.jb51.net/password/rsa_encode" target={'_blank'}>
+        <Button type="link" onClick={genKeys}>
           生成秘钥
-        </a>
+        </Button>
       </p>
       <Input.TextArea
         ref={inputPKRef}

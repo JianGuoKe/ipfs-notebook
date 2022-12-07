@@ -60,6 +60,7 @@ export default function ({
       await db.notes
         .filter(
           (note) =>
+            note.enabled &&
             note.bookId === activeBook?.id &&
             (searchText && searchVisible
               ? note.content.includes(searchText) || false

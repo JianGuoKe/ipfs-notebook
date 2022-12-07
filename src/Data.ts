@@ -1,15 +1,16 @@
-import Dexie, { IndexableType, liveQuery, Table } from 'dexie';
+import Dexie, { IndexableType, Table } from 'dexie';
 
 export interface Book {
   id?: number;
   title?: string;
-  url: string;   // 不支持本地存储，必须有url和hash
   hash?: string;
+  url: string;
   enabled: boolean;
   createAt: Date;
+  updateAt: Date;
   deleteAt?: Date;
   syncAt?: Date;   // 同步ipfs文件完成时间
-  keyId?: number;
+  checkAt?: Date;  // 同步检查时间 
   isActived: boolean;
   activedAt?: Date;
 }
@@ -25,11 +26,12 @@ export interface Note {
   content: string;
   bookId: number;
   hash?: string;
+  enabled: boolean,
   createAt: Date;
   updateAt?: Date;
   deleteAt?: Date;
   syncAt?: Date;
-  keyId?: number;
+  checkAt?: Date;  // 同步检查时间 
 }
 
 export interface Key {
@@ -56,7 +58,7 @@ export interface Option {
   activeNoteId?: number
 }
 
-function getDateNow() {
+export function getDateNow() {
   // TODO 时间服务器
   return new Date();
 }
@@ -70,7 +72,7 @@ export class NoteBookDexie extends Dexie {
   options!: Table<Option>;
   nodes!: Table<Node>;
 
-  getCurrentNode() {
+  getActaiveNode() {
     return this.nodes.toCollection().first();
   }
 
@@ -89,11 +91,15 @@ export class NoteBookDexie extends Dexie {
       await this.notes.filter(note => note.bookId === activeBook?.id).first();
   }
 
+  getActiveKey() {
+    return this.keys.filter(key => key.enabled).first();
+  }
+
   constructor() {
     super('jianguoke.notebook');
-    this.version(12).stores({
+    this.version(13).stores({
       books: '++id, title, isActived',// Primary key and indexed props
-      notes: '++id, bookId, content, createAt, updateAt',
+      notes: '++id, bookId, content, createAt, updateAt, syncAt, checkAt',
       keys: '++id',
       options: '++id',
       nodes: 'url',
@@ -137,9 +143,8 @@ export class NoteBookDexie extends Dexie {
     });
   }
 
-
   async createEmptyBook(title: string) {
-    const currentNode = await this.getCurrentNode();
+    const currentNode = await this.getActaiveNode();
     if (!currentNode?.url) {
       throw new Error('IPFS接入节点未知,需要再设置中添加')
     }
@@ -147,6 +152,7 @@ export class NoteBookDexie extends Dexie {
       ...currentNode,
       enabled: true,
       createAt: getDateNow(),
+      updateAt: getDateNow(),
       isActived: false,
       title
     });
@@ -154,7 +160,7 @@ export class NoteBookDexie extends Dexie {
   }
 
   async addBook(hash: string) {
-    const currentNode = await this.getCurrentNode();
+    const currentNode = await this.getActaiveNode();
     if (!currentNode?.url) {
       throw new Error('IPFS接入节点未知,需要再设置中添加')
     }
@@ -163,6 +169,7 @@ export class NoteBookDexie extends Dexie {
       hash,
       enabled: true,
       createAt: getDateNow(),
+      updateAt: getDateNow(),
       isActived: false,
     });
     await this.changeBook(id);
@@ -187,8 +194,13 @@ export class NoteBookDexie extends Dexie {
   async deleteBook(id: IndexableType) {
     const activeBook = await this.getActiveBook();
     const needChange = activeBook?.id === id;
-    await this.books.delete(id);
-    const books = this.books.toCollection();
+    // 逻辑删除，需要同步ipfs后彻底删除
+    await this.books.update(id, {
+      enabled: false,
+      updateAt: getDateNow(),
+      deleteAt: getDateNow()
+    });
+    const books = this.books.filter(book => book.enabled);
     if (needChange && await books.count() > 0) {
       await this.books.update((await books.first())!.id!, {
         isActived: true
@@ -204,12 +216,15 @@ export class NoteBookDexie extends Dexie {
 
   async upsertNote(content: string, id?: IndexableType) {
     const activeBook = await this.getActiveBook();
+    if (!activeBook) {
+      throw new Error('记事本不存在, 请先创建一个记事本');
+    }
     let note = await this.notes.filter(it => it.id === id).first();
     if (!note) {
       note = {
         content,
+        enabled: true,
         bookId: activeBook?.id!,
-        hash: activeBook!.hash,
         createAt: getDateNow(),
         updateAt: getDateNow(),
       };
@@ -224,7 +239,12 @@ export class NoteBookDexie extends Dexie {
   }
 
   async deleteNote(id: IndexableType) {
-    await this.notes.delete(id);
+    // 逻辑删除，需要同步ipfs后彻底删除
+    await this.notes.update(id, {
+      enabled: false,
+      updateAt: getDateNow(),
+      deleteAt: getDateNow()
+    });
   }
 
   async addKey(priKey: string, pubKey: string) {
@@ -241,6 +261,17 @@ export class NoteBookDexie extends Dexie {
     await this.keys.delete(id);
   }
 
+  async updateCheck(note: Note) {
+    await this.notes.update(note, {
+      checkAt: getDateNow()
+    });
+  }
+
+  async updateSync(note: Note) {
+    await this.notes.update(note, {
+      syncAt: getDateNow()
+    });
+  }
 }
 
 export const db = new NoteBookDexie(); 

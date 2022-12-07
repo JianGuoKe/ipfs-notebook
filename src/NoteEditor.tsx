@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import ScrollView from 'react-custom-scrollbars';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 import { db } from './Data';
 import './NoteEditor.less';
 import { Button } from 'antd';
@@ -99,9 +99,9 @@ class NoteReactQuill extends ReactQuill {
           </span>
         </div>
         <div className="editContainer">
-          <ScrollView autoHide>
+          <Scrollbars autoHide>
             <div className="editContainerContent" {...properties}></div>
-          </ScrollView>
+          </Scrollbars>
         </div>
       </div>
     );

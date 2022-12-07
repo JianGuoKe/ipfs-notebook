@@ -31,7 +31,9 @@ export default function ({
   addVisible: boolean;
   onCreateBook: (mode: string) => void;
 }) {
-  const books = useLiveQuery(() => db.books.toArray());
+  const books = useLiveQuery(() =>
+    db.books.filter((book) => book.enabled).toArray()
+  );
   const activeBook = useLiveQuery(() => db.getActiveBook());
 
   const onClick: MenuProps['onClick'] = (e) => {};

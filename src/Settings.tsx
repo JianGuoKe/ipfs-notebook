@@ -20,7 +20,7 @@ import copy from 'copy-to-clipboard';
 import React, { useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Book, db } from './Data';
-import ScrollView from 'react-custom-scrollbars';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 const { Panel } = Collapse;
 import './Settings.less';
 import dayjs from 'dayjs';
@@ -62,7 +62,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <div className="ipfs-settings">
-        <ScrollView autoHide>
+        <Scrollbars autoHide>
           <Collapse ghost>
             <Panel header="私有数据存储 (IPFS)" key="ipfsnode">
               <p>
@@ -212,7 +212,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
               </p>
             </Panel>
           </Collapse>
-        </ScrollView>
+        </Scrollbars>
       </div>
     </ConfigProvider>
   );
