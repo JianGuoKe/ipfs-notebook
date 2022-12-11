@@ -1,7 +1,8 @@
-import { Button, InputRef, Modal, Input } from 'antd';
+import { Button, InputRef, Modal, Input, message } from 'antd';
 import { useRef, useState } from 'react';
 import { db } from './Data';
 import keypair from 'keypair';
+import { createPem, download } from './utils';
 
 export default function ({ open, onClose }: any) {
   const inputPKRef = useRef<InputRef>(null);
@@ -24,6 +25,16 @@ export default function ({ open, onClose }: any) {
     setPubKey(keys.public);
   }
 
+  function startDownPPK() {
+    if (!pubKey || !priKey) {
+      return message.warning('key不完整,需要把私钥和公钥都创建');
+    }
+    download(
+      `key-notebook-${new Date().getTime()}.pem`,
+      createPem(pubKey, priKey)
+    );
+  }
+
   return (
     <Modal
       open={open}
@@ -34,6 +45,9 @@ export default function ({ open, onClose }: any) {
       footer={[
         <Button key="back" onClick={onClose}>
           取消
+        </Button>,
+        <Button key="submit" onClick={startDownPPK}>
+          下载秘钥
         </Button>,
         <Button key="submit" type="primary" onClick={addNewKey}>
           确定添加

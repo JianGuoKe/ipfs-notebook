@@ -73,7 +73,8 @@ export default function ({
       const txts = it.content.match(regP) || [];
       return {
         noteId: it.id,
-        ok: !!it.name,
+        ok: !!it.syncAt,
+        reason: it.reason,
         title: (txts[0] || '').replace(reg, ''),
         lastAt: it.updateAt || it.createAt || it.deleteAt,
         summary: txts?.slice(1).join('\n').replace(reg, '').substring(0, 20),
@@ -184,7 +185,11 @@ export default function ({
                       <span className="datetime">
                         {dayjs(item.lastAt).locale('zh-cn').fromNow()}
                       </span>
-                      {!item.ok && <span className="status">同步中...</span>}
+                      {!item.ok && (
+                        <span className="status" title={item.reason}>
+                          同步中...
+                        </span>
+                      )}
                       <span>{item.summary}</span>
                     </>
                   }

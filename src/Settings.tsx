@@ -24,6 +24,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 const { Panel } = Collapse;
 import './Settings.less';
 import dayjs from 'dayjs';
+import { createPem } from './utils';
 const { Option } = Select;
 
 const selectBefore = (defaultValue?: string) => (
@@ -120,9 +121,11 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                       description={
                         <span title={item.hash}>
                           {item.name}{' '}
-                          {item.syncAt
-                            ? dayjs(item.syncAt).fromNow()
-                            : '同步中...'}
+                          <span title={item.reason}>
+                            {item.syncAt
+                              ? dayjs(item.syncAt).fromNow()
+                              : '同步中...'}
+                          </span>
                         </span>
                       }
                     />
@@ -158,21 +161,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                             title="复制秘钥"
                             onClick={() => {
                               const ret = copy(
-                                (item.pubKey.includes('BEGIN PUBLIC KEY')
-                                  ? ''
-                                  : '-----BEGIN PUBLIC KEY-----\n') +
-                                  item.pubKey +
-                                  (item.pubKey.includes('END PUBLIC KEY')
-                                    ? ''
-                                    : '-----END PUBLIC KEY-----') +
-                                  '\n' +
-                                  (item.priKey.includes('BEGIN RSA PRIVATE KEY')
-                                    ? ''
-                                    : '-----BEGIN RSA PRIVATE KEY-----\n') +
-                                  item.priKey +
-                                  (item.priKey.includes('END RSA PRIVATE KEY')
-                                    ? ''
-                                    : '-----END RSA PRIVATE KEY-----')
+                                createPem(item.pubKey, item.priKey)
                               );
                               ret
                                 ? message.success('复制完成')

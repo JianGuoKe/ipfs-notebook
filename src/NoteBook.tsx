@@ -19,6 +19,13 @@ export default function NoteBook(): React.ReactElement {
   const [createBook, setCreateBook] = useState('add');
   const [openBook, setOpenBook] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
+  const nokey = useLiveQuery(
+    async () => !(await db.getActiveKey()) && !(await db.getActaiveNode())
+  );
+
+  useEffect(() => {
+    setOpenPPK(true);
+  }, [nokey]);
 
   const showModal = () => {
     setOpenPPK(true);

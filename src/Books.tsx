@@ -58,7 +58,10 @@ export default function ({
           ?.filter((it) => it.url?.includes(g))
           .map((it) =>
             getItem(
-              (it.title || '记事本') + (it.syncAt ? '' : '(同步中...)'),
+              <>
+                {it.title || '记事本'}
+                <span title={it.reason}>{it.syncAt ? '' : '(同步中...)'}</span>
+              </>,
               it.id!,
               <FolderOutlined />
             )

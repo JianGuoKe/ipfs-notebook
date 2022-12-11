@@ -14,6 +14,7 @@ export interface Book {
   root?: string;   // root文件夹hash
   reason?: 'nokey' | 'cidconflict' | 'success',
   syncAt?: Date;    // hash刷新时间
+  checkAt?: Date,
   isActived: boolean;
   activedAt?: Date;
 }
@@ -104,14 +105,13 @@ export class NoteBookDexie extends Dexie {
 
   constructor() {
     super('jianguoke.notebook');
-    this.version(14).stores({
-      books: '++id, title, isActived',// Primary key and indexed props
-      notes: '++id, bookId, name, content, createAt, updateAt, syncAt, checkAt',
+    this.version(18).stores({
+      books: '++id, name, checkAt',// Primary key and indexed props
+      notes: '++id, name, bookId, content,  updateAt, syncAt, checkAt',
       keys: '++id',
       options: '++id',
       nodes: 'url',
     });
-    this.init();
   }
 
   async init() {
@@ -122,10 +122,18 @@ export class NoteBookDexie extends Dexie {
       })
     }
     if (await this.options.count() <= 0) {
-      await this.options.add({})
+      await this.options.add({
+        bookVisible: true,
+        syncMin: 10
+      })
     }
     await (await this.books.filter(it => !it.name).toArray()).forEach(async book => {
       await this.books.update(book.id!, {
+        name: shortid.generate()
+      })
+    })
+    await (await this.notes.filter(it => !it.name).toArray()).forEach(async note => {
+      await this.notes.update(note.id!, {
         name: shortid.generate()
       })
     })
@@ -166,6 +174,7 @@ export class NoteBookDexie extends Dexie {
       enabled: true,
       createAt: getDateNow(),
       updateAt: getDateNow(),
+      checkAt: new Date(0),
       isActived: false,
       title
     });
@@ -183,6 +192,7 @@ export class NoteBookDexie extends Dexie {
       enabled: true,
       createAt: getDateNow(),
       updateAt: getDateNow(),
+      checkAt: new Date(0),
       isActived: false,
     });
     await this.changeBook(id);
@@ -211,7 +221,8 @@ export class NoteBookDexie extends Dexie {
     await this.books.update(id, {
       enabled: false,
       updateAt: getDateNow(),
-      deleteAt: getDateNow()
+      deleteAt: getDateNow(),
+      checkAt: new Date(0),
     });
     const books = this.books.filter(book => book.enabled);
     if (needChange && await books.count() > 0) {
@@ -254,6 +265,7 @@ export class NoteBookDexie extends Dexie {
         createAt: getDateNow(),
         updateAt: getDateNow(),
         hash,
+        checkAt: new Date(0),
         syncAt: hash ? getDateNow() : undefined
       };
       const id = await this.notes.add(note);
@@ -263,6 +275,7 @@ export class NoteBookDexie extends Dexie {
         content,
         updateAt: getDateNow(),
         hash: hash || note.hash,
+        checkAt: new Date(0),
         syncAt: hash ? getDateNow() : note.syncAt
       });
     }
@@ -278,7 +291,8 @@ export class NoteBookDexie extends Dexie {
       await this.notes.update(id, {
         enabled: false,
         updateAt: getDateNow(),
-        deleteAt: getDateNow()
+        deleteAt: getDateNow(),
+        checkAt: new Date(0),
       });
     } else {
       await this.notes.delete(id);
@@ -315,6 +329,12 @@ export class NoteBookDexie extends Dexie {
       bookId: note.bookId,
       reason: note.reason,
       syncAt: note.reason === 'success' ? getDateNow() : note.syncAt
+    });
+  }
+
+  async checkBook(book: Book) {
+    await this.books.update(book, {
+      checkAt: getDateNow()
     });
   }
 

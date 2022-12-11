@@ -7,28 +7,34 @@ import crypto from 'crypto';
 import shortid from 'shortid';
 
 let ipfs: IPFSHTTPClient | undefined;
-liveQuery(() => db.nodes.toCollection().first()).subscribe(node => {
-  if (node && node.url) {
-    ipfs = create({ url: node.url });
-    startEnabled = true;
-    startSync();
-  } else {
-    ipfs = undefined;
-    startEnabled = false;
-  }
-});
+export function start() {
+  liveQuery(() => db.nodes.toCollection().first()).subscribe(node => {
+    if (node && node.url) {
+      ipfs = create({ url: node.url });
+      startEnabled = true;
+      startSync();
+    } else {
+      ipfs = undefined;
+      startEnabled = false;
+    }
+  });
+}
 
 async function checkSync() {
   console.log('check sync...');
   const key = await db.getActiveKey();
+  const options = await db.getOptions();
   // 30分钟内同步一次
-  const lastAt = dayjs(getDateNow()).subtract(30, 'minute').toDate();
+  const lastAt = dayjs(getDateNow()).subtract(options?.syncMin || 10, 'minute').toDate();
   // 从小到大时间顺序同步数据
-  await db.notes.orderBy('checkAt').filter(note =>
+  const upnotes = await db.notes.orderBy('checkAt').filter(note =>
     !!note.bookId &&
-    (!note.syncAt || note.syncAt < note.updateAt!) && (!note.checkAt || note.checkAt < lastAt)
-  ).each(async note => {
-    console.log('check note...', note.id)
+    (!note.syncAt || note.syncAt < note.updateAt!) &&
+    (!note.checkAt || note.checkAt < lastAt)
+  ).toArray();
+  console.debug('check notes...', upnotes.length);
+  await upnotes.forEach(async note => {
+    console.debug('check note id...', note.id)
     await db.checkNote(note);
     const book = await db.books.get(note.bookId!);
     if (book) {
@@ -36,9 +42,11 @@ async function checkSync() {
         note.name = note.name || shortid.generate();
         try {
           if (!note.enabled) {
-            await deleteFile(book.name + '/' + note.name, note.hash);
+            console.debug('delete file...', '/' + book.name + '/' + note.name);
+            await deleteFile('/' + book.name + '/' + note.name, note.hash);
           } else {
-            note.hash = await uploadFileEncrypted(note.content, book.name + '/' + note.name, key, note.hash, note.force);
+            console.debug('write file...', '/' + book.name + '/' + note.name);
+            note.hash = await uploadFileEncrypted(note.content, '/' + book.name + '/' + note.name, key, note.hash, note.force);
           }
           note.reason = 'success';
         } catch (err: any) {
@@ -54,33 +62,41 @@ async function checkSync() {
     await db.syncNote(note);
   });
   // 拉取服务器文件
-  await db.books.each(async book => {
-    console.log('check book...', book.id)
+  const upbooks = await db.books.orderBy('checkAt').filter(book => (!book.checkAt || book.checkAt < lastAt)).toArray();
+  console.debug('check books...', upbooks.length)
+  await upbooks.forEach(async book => {
+    console.debug('check book id...', book.id)
+    await db.checkBook(book);
     if (key) {
       try {
         if (!book.enabled) {
-          await deleteFile(book.name, book.hash);
+          console.debug('delete folder...', '/' + book.name);
+          await deleteFile('/' + book.name, book.hash);
         } else {
           const stat = await ipfs!.files.stat(book.name);
           if (stat.cid.toString() !== book.hash) {
-            const files = await getUploadedFiles(book.name);
+            const files = await getUploadedFiles('/' + book.name);
             // 删除本地
             const removes = await db.notes.where(['bookId']).equals(book.id!).filter(note => files.every(file => file.path !== note.name));
-            await db.notes.bulkDelete(await removes.primaryKeys());
+            const pks = await removes.primaryKeys();
+            console.debug('delete note...', pks);
+            await db.notes.bulkDelete(pks);
             // 新增更新
             for (const file of files) {
               const note = await db.notes.get({ name: file.path });
               if (!note) {
                 // 新增
+                console.debug('add note...', file.path);
                 await db.addNote(await downloadFileEncrypted(file.path, key), file.path, book.id!, file.cid.toString());
               } else {
-                if (!note.updateAt) {
-
-                } else {
+                if (note.updateAt) {
                   if (note.syncAt && note.syncAt >= note.updateAt && note.hash !== file.cid.toString()) {
                     // 本地没有修改以服务器为主
+                    console.debug('update note...', note.id, file.path);
                     await db.upsertNote(await downloadFileEncrypted(file.path, key), note.id);
                   }
+                } else {
+                  // 走note的保存机制
                 }
               }
             }
@@ -89,6 +105,7 @@ async function checkSync() {
           // 更新本地hash
           const statRoot = await ipfs!.files.stat('/');
           book.root = statRoot.cid.toString();
+          console.debug('update book...', book.id, statRoot.cid.toString());
         }
         book.reason = 'success';
       } catch (err: any) {
