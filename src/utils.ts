@@ -39,9 +39,26 @@ export function getReasonText(reason: string | undefined) {
       return '远程更新冲突'
     case 'nobook':
       return '记事本未找到'
+    case 'success':
+      return ''
     case undefined:
       return ''
     default:
       return reason
+  }
+}
+
+export function formatStringLen(strVal: string, len: number, padChar: string = ' ') {
+  if (!strVal) {
+    return padChar.repeat(len);
+  } else {
+    const strLen = strVal.length;
+    if (strLen > len) {
+      return strVal.substring(0, len);
+    } else if (strLen < len) {
+      return strVal.padEnd(len, padChar);
+    } else {
+      return strVal;
+    }
   }
 }

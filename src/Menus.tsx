@@ -74,7 +74,7 @@ export default function ({
       const txts = it.content.match(regP) || [];
       return {
         noteId: it.id,
-        ok: !!it.syncAt,
+        ok: !it.syncAt || !it.updateAt || it.syncAt >= it.updateAt,
         reason: it.reason,
         title: (txts[0] || '').replace(reg, ''),
         lastAt: it.updateAt || it.createAt || it.deleteAt,
@@ -195,7 +195,9 @@ export default function ({
                           title={getReasonText(item.reason)}
                           onClick={() => db.resyncNote(item.noteId!)}
                         >
-                          {item.reason ? '同步失败...' : '同步中...'}
+                          {item.reason !== 'success' && item.reason
+                            ? '同步失败...'
+                            : '同步中...'}
                         </span>
                       )}
                       <span>{item.summary}</span>

@@ -105,10 +105,10 @@ export class NoteBookDexie extends Dexie {
 
   constructor() {
     super('jianguoke.notebook');
-    this.version(18).stores({
+    this.version(19).stores({
       books: '++id, name, checkAt',// Primary key and indexed props
       notes: '++id, name, bookId, content,  updateAt, syncAt, checkAt',
-      keys: '++id',
+      keys: '++id, name',
       options: '++id',
       nodes: 'url',
     });
@@ -301,7 +301,7 @@ export class NoteBookDexie extends Dexie {
 
   async addKey(priKey: string, pubKey: string) {
     await this.keys.add({
-      name: '秘钥',
+      name: shortid.generate(),
       priKey,
       pubKey,
       enabled: true,
@@ -354,7 +354,11 @@ export class NoteBookDexie extends Dexie {
 
   async syncBook(book: Book) {
     if (!book.enabled && book.reason === 'success') {
-      return await this.books.delete(book.id!);
+      await this.books.delete(book.id!);
+      const ids = await this.notes.where('bookId').equals(book.id!).primaryKeys();
+      console.log('remove notes...', ids)
+      await this.notes.bulkDelete(ids);
+      return
     }
     await this.books.update(book, {
       hash: book.hash,

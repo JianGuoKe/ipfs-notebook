@@ -6,6 +6,8 @@ import { MFSEntry } from 'ipfs-core-types/dist/src/files';
 import crypto from 'crypto';
 import shortid from 'shortid';
 import { Buffer } from 'buffer';
+import { formatStringLen } from './utils';
+import keypair from 'keypair';
 
 let ipfs: IPFSHTTPClient | undefined;
 export function start() {
@@ -19,6 +21,10 @@ export function start() {
       startEnabled = false;
     }
   });
+}
+
+async function findKey(name: string) {
+  return await db.keys.get({ name });
 }
 
 async function checkSync() {
@@ -68,64 +74,71 @@ async function checkSync() {
   await upbooks.forEach(async book => {
     console.debug('check book id...', book.id)
     await db.checkBook(book);
-    if (key) {
-      try {
-        if (!book.enabled) {
-          console.debug('delete folder...', '/' + book.name);
-          await deleteFile('/' + book.name, book.hash);
-        } else {
-          const stat = await ipfs!.files.stat('/' + book.name);
-          if (stat.cid.toString() !== book.hash) {
-            const files = await getUploadedFiles('/' + book.name);
-            // 删除本地
-            const removes = await db.notes.where('bookId').equals(book.id!).filter(note => files.every(file => file.path !== '/' + note.name &&
+    try {
+      let reason;
+      if (!book.enabled) {
+        console.debug('delete folder...', '/' + book.name);
+        await deleteFile('/' + book.name, book.hash);
+      } else {
+        const stat = await ipfs!.files.stat('/' + book.name);
+        if (stat.cid.toString() !== book.hash) {
+          const files = await getUploadedFiles('/' + book.name);
+          // 删除本地
+          const removes = await db.notes.where('bookId').equals(book.id!).filter(note =>
+            files.every(file => file.path !== ('/' + book.name + '/' + note.name) &&
               (note.syncAt && note.syncAt > note.updateAt!)));
-            const pks = await removes.primaryKeys();
-            console.debug('delete note...', pks);
-            await db.notes.bulkDelete(pks);
-            // 新增更新
-            for (const file of files) {
-              const note = await db.notes.get({ name: file.path });
+          const pks = await removes.primaryKeys();
+          console.debug('delete note...', pks);
+          await db.notes.bulkDelete(pks);
+          // 新增更新
+          for (const file of files) {
+            let note;
+            try {
+              note = await db.notes.get({ name: file.path.substring(1) });
               if (!note) {
                 // 新增
                 console.debug('add note...', file.path);
-                await db.addNote(await downloadFileEncrypted(file.path, key), file.path, book.id!, file.cid.toString());
+                await db.addNote(await downloadFileEncrypted(file.path, findKey), file.path, book.id!, file.cid.toString());
               } else {
                 if (note.updateAt) {
                   if (note.syncAt && note.syncAt >= note.updateAt && note.hash !== file.cid.toString()) {
                     // 本地没有修改以服务器为主
                     console.debug('update note...', note.id, file.path);
-                    await db.upsertNote(await downloadFileEncrypted(file.path, key), note.id);
+                    await db.upsertNote(await downloadFileEncrypted(file.path, findKey), note.id);
                   }
                 } else {
                   // 走note的保存机制
                 }
               }
+            } catch (err: any) {
+              if (note) {
+                await db.syncNote(note);
+              }
+              reason = err.message;
             }
-            book.hash = stat.cid.toString();
           }
-          // 更新本地hash
-          const statRoot = await ipfs!.files.stat('/');
-          book.root = statRoot.cid.toString();
-          console.debug('update book...', book.id, statRoot.cid.toString());
+          book.hash = stat.cid.toString();
         }
-        book.reason = 'success';
-      } catch (err: any) {
-        let reason;
-        if (err.message === 'file does not exists') {
-          if (!book.enabled) {
-            reason = 'success';
-          } else {
-            reason = err.message;
-          }
-        } else {
+        // 更新本地hash
+        const statRoot = await ipfs!.files.stat('/');
+        book.root = statRoot.cid.toString();
+        console.debug('update book...', book.id, statRoot.cid.toString());
+      }
+      book.reason = reason || 'success';
+    } catch (err: any) {
+      let reason;
+      if (err.message === 'file does not exist') {
+        if (!book.enabled) {
+          reason = 'success';
+        } else if (book.syncAt) {
           reason = err.message;
         }
-        book.reason = reason;
+      } else {
+        reason = err.message;
       }
-    } else {
-      book.reason = 'nokey';
+      book.reason = reason;
     }
+
     await db.syncBook(book);
   });
   console.log('check sync end.');
@@ -179,6 +192,7 @@ export async function uploadFileEncrypted(buff: string, ipfspath: string, keyPai
     const ebuff = encryptAES(Buffer.from(buff), key, iv);
 
     const content = Buffer.concat([ // headers: encrypted key and IV (len: 700=684+16)
+      Buffer.from(formatStringLen(keyPair.name, 10), 'utf8'),
       Buffer.from(ekey, 'utf8'),   // char length: 684
       Buffer.from(iv, 'utf8'),     // char length: 16
       Buffer.from(ebuff, 'utf8')
@@ -223,7 +237,7 @@ async function toArray(asyncIterator: AsyncIterable<MFSEntry>) {
   return arr;
 }
 
-export async function downloadFileEncrypted(ipfspath: string, keyPair: Key) {
+export async function downloadFileEncrypted(ipfspath: string, findKey: (keyName: string) => Promise<Key | undefined>) {
   try {
     let file_data = await ipfs!.files.read(ipfspath)
 
@@ -232,6 +246,10 @@ export async function downloadFileEncrypted(ipfspath: string, keyPair: Key) {
       edata.push(chunk)
     const buff = Buffer.concat(edata)
 
+    const keyPair = await findKey(buff.slice(0, 10).toString('utf8'));
+    if (!keyPair) {
+      throw new Error('nokey');
+    }
     const key = decryptRSA(buff.slice(0, 684).toString('utf8'), keyPair.priKey)
     const iv = buff.slice(684, 700).toString('utf8')
     const econtent = buff.slice(700).toString('utf8')
@@ -257,11 +275,11 @@ export async function getUploadedFiles(ipfspath: string) {
   const arr = await toArray(ipfs!.files.ls(ipfspath))
   for (let file of arr) {
     if (file.type === 'directory') {
-      const inner = await getUploadedFiles(ipfspath + file.name + '/')
+      const inner = await getUploadedFiles(ipfspath + '/' + file.name + '/')
       files = files.concat(inner)
     } else {
       files.push({
-        path: ipfspath + file.name,
+        path: ipfspath + '/' + file.name,
         size: file.size,
         cid: file.cid.toString()
       })

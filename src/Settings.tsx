@@ -25,7 +25,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 const { Panel } = Collapse;
 import './Settings.less';
 import dayjs from 'dayjs';
-import { createPem, download } from './utils';
+import { createPem, download, getReasonText } from './utils';
 const { Option } = Select;
 
 const selectBefore = (defaultValue?: string) => (
@@ -96,6 +96,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                               onClick={() => startEditTitle(item)}
                             >
                               {item.title || '记事本'}
+                              {!item.enabled ? '(删除中...)' : ''}
                             </span>
                           ) : null}
                           {editBook === item ? (
@@ -112,7 +113,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           <Popconfirm
                             title="删除后将移除记事本?"
                             onConfirm={() => db.deleteBook(item.id!)}
-                            okText="确定删除"
+                            okText="删除"
                             cancelText="取消"
                           >
                             <DeleteOutlined title="删除文件夹" />
@@ -122,10 +123,11 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                       description={
                         <span title={item.hash}>
                           {item.name}{' '}
-                          <span title={item.reason}>
-                            {item.syncAt
-                              ? dayjs(item.syncAt).fromNow()
-                              : '同步中...'}
+                          <span title={getReasonText(item.reason)}>
+                            {item.syncAt ? dayjs(item.syncAt).fromNow() : ''}
+                            {item.reason && item.reason !== 'success'
+                              ? '(同步失败...)'
+                              : '(同步中...)'}
                           </span>
                         </span>
                       }
@@ -157,7 +159,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                       avatar={<KeyOutlined style={{ fontSize: 26 }} />}
                       title={
                         <span>
-                          {item.name}{' '}
+                          {'秘钥'}{' '}
                           <CopyOutlined
                             title="复制秘钥"
                             onClick={() => {

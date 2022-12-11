@@ -19,7 +19,7 @@ export default function ({ open, onClose }: any) {
 
   function genKeys() {
     const keys = keypair({
-      bits: 2048,
+      bits: 4096,
     });
     setPriKey(keys.private);
     setPubKey(keys.public);

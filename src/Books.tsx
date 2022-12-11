@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { Book, db } from './Data';
 import './Books.less';
+import { getReasonText } from './utils';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -60,7 +61,10 @@ export default function ({
             getItem(
               <>
                 {it.title || '记事本'}
-                <span title={it.reason} onClick={() => db.resyncBook(it)}>
+                <span
+                  title={getReasonText(it.reason)}
+                  onClick={() => db.resyncBook(it)}
+                >
                   {it.syncAt ? '' : it.reason ? '(同步失败...)' : '(同步中...)'}
                 </span>
               </>,
