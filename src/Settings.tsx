@@ -113,13 +113,13 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                             okText="确定删除"
                             cancelText="取消"
                           >
-                            <DeleteOutlined title="删除文件夹HASH" />
+                            <DeleteOutlined title="删除文件夹" />
                           </Popconfirm>
                         </span>
                       }
                       description={
                         <span title={item.hash}>
-                          {item.hash || '文件Hash创建中...'}{' '}
+                          {item.name}{' '}
                           {item.syncAt
                             ? dayjs(item.syncAt).fromNow()
                             : '同步中...'}
@@ -162,10 +162,10 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                                   ? ''
                                   : '-----BEGIN PUBLIC KEY-----\n') +
                                   item.pubKey +
-                                  (item.priKey.includes('END PUBLIC KEY')
+                                  (item.pubKey.includes('END PUBLIC KEY')
                                     ? ''
                                     : '-----END PUBLIC KEY-----') +
-                                  '\n\n' +
+                                  '\n' +
                                   (item.priKey.includes('BEGIN RSA PRIVATE KEY')
                                     ? ''
                                     : '-----BEGIN RSA PRIVATE KEY-----\n') +

@@ -73,7 +73,7 @@ export default function ({
       const txts = it.content.match(regP) || [];
       return {
         noteId: it.id,
-        ok: !!it.hash,
+        ok: !!it.name,
         title: (txts[0] || '').replace(reg, ''),
         lastAt: it.updateAt || it.createAt || it.deleteAt,
         summary: txts?.slice(1).join('\n').replace(reg, '').substring(0, 20),

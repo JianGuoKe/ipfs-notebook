@@ -4,8 +4,7 @@ import { liveQuery } from 'dexie';
 import dayjs from 'dayjs';
 import { MFSEntry } from 'ipfs-core-types/dist/src/files';
 import crypto from 'crypto';
-
-const root = '/jianguoke/note'
+import shortid from 'shortid';
 
 let ipfs: IPFSHTTPClient | undefined;
 liveQuery(() => db.nodes.toCollection().first()).subscribe(node => {
@@ -20,19 +19,97 @@ liveQuery(() => db.nodes.toCollection().first()).subscribe(node => {
 });
 
 async function checkSync() {
+  console.log('check sync...');
   const key = await db.getActiveKey();
   // 30分钟内同步一次
   const lastAt = dayjs(getDateNow()).subtract(30, 'minute').toDate();
   // 从小到大时间顺序同步数据
   await db.notes.orderBy('checkAt').filter(note =>
+    !!note.bookId &&
     (!note.syncAt || note.syncAt < note.updateAt!) && (!note.checkAt || note.checkAt < lastAt)
   ).each(async note => {
-    await db.updateCheck(note);
-    const book = await db.books.get(note.bookId);
-    // TOD 这里ipfspath有待修正
-    await uploadFileEncrypted(note.content, root + '/' + book!.title! + '/' + note.id, key!);
-    await db.updateSync(note);
+    console.log('check note...', note.id)
+    await db.checkNote(note);
+    const book = await db.books.get(note.bookId!);
+    if (book) {
+      if (key) {
+        note.name = note.name || shortid.generate();
+        try {
+          if (!note.enabled) {
+            await deleteFile(book.name + '/' + note.name, note.hash);
+          } else {
+            note.hash = await uploadFileEncrypted(note.content, book.name + '/' + note.name, key, note.hash, note.force);
+          }
+          note.reason = 'success';
+        } catch (err: any) {
+          note.reason = err.message;
+        }
+      } else {
+        note.reason = 'nokey';
+      }
+    } else {
+      note.bookId = undefined;
+      note.reason = 'nobook';
+    }
+    await db.syncNote(note);
   });
+  // 拉取服务器文件
+  await db.books.each(async book => {
+    console.log('check book...', book.id)
+    if (key) {
+      try {
+        if (!book.enabled) {
+          await deleteFile(book.name, book.hash);
+        } else {
+          const stat = await ipfs!.files.stat(book.name);
+          if (stat.cid.toString() !== book.hash) {
+            const files = await getUploadedFiles(book.name);
+            // 删除本地
+            const removes = await db.notes.where(['bookId']).equals(book.id!).filter(note => files.every(file => file.path !== note.name));
+            await db.notes.bulkDelete(await removes.primaryKeys());
+            // 新增更新
+            for (const file of files) {
+              const note = await db.notes.get({ name: file.path });
+              if (!note) {
+                // 新增
+                await db.addNote(await downloadFileEncrypted(file.path, key), file.path, book.id!, file.cid.toString());
+              } else {
+                if (!note.updateAt) {
+
+                } else {
+                  if (note.syncAt && note.syncAt >= note.updateAt && note.hash !== file.cid.toString()) {
+                    // 本地没有修改以服务器为主
+                    await db.upsertNote(await downloadFileEncrypted(file.path, key), note.id);
+                  }
+                }
+              }
+            }
+            book.hash = stat.cid.toString();
+          }
+          // 更新本地hash
+          const statRoot = await ipfs!.files.stat('/');
+          book.root = statRoot.cid.toString();
+        }
+        book.reason = 'success';
+      } catch (err: any) {
+        let reason;
+        if (err.message === 'file does not exists') {
+          if (!book.enabled) {
+            reason = 'success';
+          } else {
+            reason = err.message;
+          }
+        } else {
+          reason = err.message;
+        }
+        book.reason = reason;
+      }
+    } else {
+      book.reason = 'nokey';
+    }
+    await db.syncBook(book);
+  });
+  console.log('check sync end.');
 }
 
 let startEnabled = true;
@@ -64,7 +141,18 @@ function startSync(timeout = 0) {
 //////////// IPFS //////////////
 ////////////////////////////////
 
-export async function uploadFileEncrypted(buff: string, ipfspath: string, keyPair: Key) {
+export async function deleteFile(ipfspath: string, cid?: string, force = false) {
+  let stat = await ipfs!.files.stat(ipfspath);
+  if (!force && cid && stat.cid.toString() !== cid) {
+    throw new Error('cidconflict')
+  }
+  await ipfs!.files.rm(
+    ipfspath,
+    { recursive: true }
+  );
+}
+
+export async function uploadFileEncrypted(buff: string, ipfspath: string, keyPair: Key, cid?: string, force = false) {
   try {
     const key = crypto.randomBytes(16).toString('hex'); // 16 bytes -> 32 chars
     const iv = crypto.randomBytes(8).toString('hex');   // 8 bytes -> 16 chars
@@ -77,16 +165,24 @@ export async function uploadFileEncrypted(buff: string, ipfspath: string, keyPai
       Buffer.from(ebuff, 'utf8')
     ])
 
+    let stat = await ipfs!.files.stat(ipfspath);
+    if (!force && cid && stat.cid.toString() !== cid) {
+      throw new Error('cidconflict')
+    }
     await ipfs!.files.write(
       ipfspath,
       content,
       { create: true, parents: true }
     );
+    stat = await ipfs!.files.stat(ipfspath);
 
     console.log('ENCRYPTION --------')
     console.log('key:', key, 'iv:', iv, 'ekey:', ekey.length)
     console.log('contents:', buff.length, 'encrypted:', ebuff.length)
+    console.log('cid:', stat.cid.toString())
     console.log(' ')
+
+    return stat.cid.toString();
 
   } catch (err) {
     console.log(err)
@@ -160,7 +256,7 @@ function decryptAES(buffer: Buffer, secretKey: string, iv: string) {
   const decipher = crypto.createDecipheriv('aes-256-ctr', secretKey, iv);
   const data = decipher.update(buffer)
   const decrpyted = Buffer.concat([data, decipher.final()]);
-  return decrpyted;
+  return decrpyted.toString('utf8');
 }
 
 function encryptRSA(toEncrypt: string, publicKey: string) {
