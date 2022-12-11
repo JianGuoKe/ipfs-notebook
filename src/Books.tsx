@@ -2,7 +2,7 @@ import { FolderOutlined, PlusOutlined } from '@ant-design/icons';
 import { Menu, MenuProps } from 'antd';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
-import { db } from './Data';
+import { Book, db } from './Data';
 import './Books.less';
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -60,7 +60,9 @@ export default function ({
             getItem(
               <>
                 {it.title || '记事本'}
-                <span title={it.reason}>{it.syncAt ? '' : '(同步中...)'}</span>
+                <span title={it.reason} onClick={() => db.resyncBook(it)}>
+                  {it.syncAt ? '' : it.reason ? '(同步失败...)' : '(同步中...)'}
+                </span>
               </>,
               it.id!,
               <FolderOutlined />

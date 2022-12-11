@@ -193,6 +193,7 @@ export default function ({
                         <span
                           className="status"
                           title={getReasonText(item.reason)}
+                          onClick={() => db.resyncNote(item.noteId!)}
                         >
                           {item.reason ? '同步失败...' : '同步中...'}
                         </span>

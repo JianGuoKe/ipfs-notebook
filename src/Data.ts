@@ -313,6 +313,13 @@ export class NoteBookDexie extends Dexie {
     await this.keys.delete(id);
   }
 
+  async resyncNote(note: Note | IndexableType) {
+    await this.notes.update(note, {
+      reason: '',
+      checkAt: new Date(0)
+    });
+  }
+
   async checkNote(note: Note) {
     await this.notes.update(note, {
       checkAt: getDateNow()
@@ -329,6 +336,13 @@ export class NoteBookDexie extends Dexie {
       bookId: note.bookId,
       reason: note.reason,
       syncAt: note.reason === 'success' ? getDateNow() : note.syncAt
+    });
+  }
+
+  async resyncBook(book: Book) {
+    await this.books.update(book, {
+      reason: '',
+      checkAt: new Date(0)
     });
   }
 

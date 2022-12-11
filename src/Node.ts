@@ -74,11 +74,12 @@ async function checkSync() {
           console.debug('delete folder...', '/' + book.name);
           await deleteFile('/' + book.name, book.hash);
         } else {
-          const stat = await ipfs!.files.stat(book.name);
+          const stat = await ipfs!.files.stat('/' + book.name);
           if (stat.cid.toString() !== book.hash) {
             const files = await getUploadedFiles('/' + book.name);
             // 删除本地
-            const removes = await db.notes.where(['bookId']).equals(book.id!).filter(note => files.every(file => file.path !== note.name));
+            const removes = await db.notes.where('bookId').equals(book.id!).filter(note => files.every(file => file.path !== '/' + note.name &&
+              (note.syncAt && note.syncAt > note.updateAt!)));
             const pks = await removes.primaryKeys();
             console.debug('delete note...', pks);
             await db.notes.bulkDelete(pks);
