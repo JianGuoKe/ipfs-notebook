@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { MFSEntry } from 'ipfs-core-types/dist/src/files';
 import crypto from 'crypto';
 import shortid from 'shortid';
+import { Buffer } from 'buffer';
 
 let ipfs: IPFSHTTPClient | undefined;
 export function start() {
@@ -181,9 +182,15 @@ export async function uploadFileEncrypted(buff: string, ipfspath: string, keyPai
       Buffer.from(iv, 'utf8'),     // char length: 16
       Buffer.from(ebuff, 'utf8')
     ])
-
-    let stat = await ipfs!.files.stat(ipfspath);
-    if (!force && cid && stat.cid.toString() !== cid) {
+    let stat;
+    try {
+      stat = await ipfs!.files.stat(ipfspath);
+    } catch (err: any) {
+      if (err.message !== 'file does not exist') {
+        throw err;
+      }
+    }
+    if (!force && cid && stat?.cid.toString() !== cid) {
       throw new Error('cidconflict')
     }
     await ipfs!.files.write(

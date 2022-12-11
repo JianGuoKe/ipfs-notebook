@@ -39,14 +39,14 @@ export default function ({ open, onClose }: any) {
     <Modal
       open={open}
       title="添加秘钥"
-      width={620}
+      width={650}
       onOk={addNewKey}
       onCancel={onClose}
       footer={[
         <Button key="back" onClick={onClose}>
           取消
         </Button>,
-        <Button key="submit" onClick={startDownPPK}>
+        <Button key="download" onClick={startDownPPK}>
           下载秘钥
         </Button>,
         <Button key="submit" type="primary" onClick={addNewKey}>

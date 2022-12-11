@@ -1,6 +1,7 @@
 import {
   CopyOutlined,
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   FolderOutlined,
   KeyOutlined,
@@ -24,7 +25,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 const { Panel } = Collapse;
 import './Settings.less';
 import dayjs from 'dayjs';
-import { createPem } from './utils';
+import { createPem, download } from './utils';
 const { Option } = Select;
 
 const selectBefore = (defaultValue?: string) => (
@@ -168,6 +169,15 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                                 : message.error('复制失败');
                             }}
                           ></CopyOutlined>
+                          <DownloadOutlined
+                            title="下载秘钥"
+                            onClick={() => {
+                              download(
+                                `key-notebook-${new Date().getTime()}.pem`,
+                                createPem(item.pubKey, item.priKey)
+                              );
+                            }}
+                          ></DownloadOutlined>
                           <Popconfirm
                             title="删除此秘钥?"
                             onConfirm={() => db.deleteKey(item.id!)}

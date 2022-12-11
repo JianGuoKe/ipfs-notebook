@@ -26,6 +26,7 @@
       display: block;
       overflow: hidden;
       text-overflow: ellipsis;
+      white-space: nowrap;
     }
   }
 
@@ -40,5 +41,10 @@
   .datetime,
   .status {
     padding: 0 5px 0 0;
+    max-width: 60px;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }

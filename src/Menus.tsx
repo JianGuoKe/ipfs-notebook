@@ -15,6 +15,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/zh-cn';
 import { useEffect, useRef, useState } from 'react';
 import VirtualList, { ListRef } from 'rc-virtual-list';
+import { getReasonText } from './utils';
 dayjs.extend(relativeTime);
 
 const customizeRenderEmpty = () => (
@@ -182,12 +183,18 @@ export default function ({
                   title={<a title={item.title}>{item.title || '无标题'}</a>}
                   description={
                     <>
-                      <span className="datetime">
+                      <span
+                        className="datetime"
+                        title={dayjs(item.lastAt).toString()}
+                      >
                         {dayjs(item.lastAt).locale('zh-cn').fromNow()}
                       </span>
                       {!item.ok && (
-                        <span className="status" title={item.reason}>
-                          同步中...
+                        <span
+                          className="status"
+                          title={getReasonText(item.reason)}
+                        >
+                          {item.reason ? '同步失败...' : '同步中...'}
                         </span>
                       )}
                       <span>{item.summary}</span>

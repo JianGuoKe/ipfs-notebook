@@ -20,11 +20,11 @@ export default function NoteBook(): React.ReactElement {
   const [openBook, setOpenBook] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
   const nokey = useLiveQuery(
-    async () => !(await db.getActiveKey()) && !(await db.getActaiveNode())
+    async () => !(await db.getActiveKey()) && !!(await db.getActaiveNode())
   );
 
   useEffect(() => {
-    setOpenPPK(true);
+    nokey && setOpenPPK(true);
   }, [nokey]);
 
   const showModal = () => {
