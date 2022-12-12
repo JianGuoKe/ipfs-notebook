@@ -65,7 +65,11 @@ export default function ({
                   title={getReasonText(it.reason)}
                   onClick={() => db.resyncBook(it)}
                 >
-                  {it.syncAt ? '' : it.reason ? '(同步失败...)' : '(同步中...)'}
+                  {it.syncAt
+                    ? ''
+                    : it.reason !== 'success' && it.reason
+                    ? '(同步失败...)'
+                    : '(同步中...)'}
                 </span>
               </>,
               it.id!,

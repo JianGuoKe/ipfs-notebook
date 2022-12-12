@@ -63,6 +63,7 @@ export default function ({
           (note) =>
             note.enabled &&
             note.bookId === activeBook?.id &&
+            activeBook?.enabled === true &&
             (searchText && searchVisible
               ? note.content.includes(searchText) || false
               : true)
@@ -74,7 +75,7 @@ export default function ({
       const txts = it.content.match(regP) || [];
       return {
         noteId: it.id,
-        ok: !it.syncAt || !it.updateAt || it.syncAt >= it.updateAt,
+        ok: it.syncAt && it.updateAt && it.syncAt >= it.updateAt,
         reason: it.reason,
         title: (txts[0] || '').replace(reg, ''),
         lastAt: it.updateAt || it.createAt || it.deleteAt,

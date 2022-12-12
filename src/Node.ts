@@ -1,5 +1,5 @@
 import { create, IPFSHTTPClient } from 'ipfs-http-client'
-import { db, getDateNow, Key } from './Data';
+import { Book, db, getDateNow, Key } from './Data';
 import { liveQuery } from 'dexie';
 import dayjs from 'dayjs';
 import { MFSEntry } from 'ipfs-core-types/dist/src/files';
@@ -7,7 +7,6 @@ import crypto from 'crypto';
 import shortid from 'shortid';
 import { Buffer } from 'buffer';
 import { formatStringLen } from './utils';
-import keypair from 'keypair';
 
 let ipfs: IPFSHTTPClient | undefined;
 export function start() {
@@ -40,7 +39,8 @@ async function checkSync() {
     (!note.checkAt || note.checkAt < lastAt)
   ).toArray();
   console.debug('check notes...', upnotes.length);
-  await upnotes.forEach(async note => {
+  const changedbooks: Book[] = [];
+  for (const note of upnotes) {
     console.debug('check note id...', note.id)
     await db.checkNote(note);
     const book = await db.books.get(note.bookId!);
@@ -56,6 +56,7 @@ async function checkSync() {
             note.hash = await uploadFileEncrypted(note.content, '/' + book.name + '/' + note.name, key, note.hash, note.force);
           }
           note.reason = 'success';
+          changedbooks.push(book);
         } catch (err: any) {
           note.reason = err.message;
         }
@@ -67,11 +68,17 @@ async function checkSync() {
       note.reason = 'nobook';
     }
     await db.syncNote(note);
-  });
+  }
+  // 更新book的hash
+  for (const book of changedbooks) {
+    const stat = await ipfs!.files.stat('/' + book.name);
+    book.hash = stat.cid.toString();
+    await db.syncBook(book);
+  }
   // 拉取服务器文件
   const upbooks = await db.books.orderBy('checkAt').filter(book => (!book.checkAt || book.checkAt < lastAt)).toArray();
   console.debug('check books...', upbooks.length)
-  await upbooks.forEach(async book => {
+  for (const book of upbooks) {
     console.debug('check book id...', book.id)
     await db.checkBook(book);
     try {
@@ -90,15 +97,15 @@ async function checkSync() {
           const pks = await removes.primaryKeys();
           console.debug('delete note...', pks);
           await db.notes.bulkDelete(pks);
-          // 新增更新
+          // 新增更新本地
           for (const file of files) {
             let note;
             try {
-              note = await db.notes.get({ name: file.path.substring(1) });
+              note = await db.notes.get({ name: file.path.split('/')[2], bookId: book.id! });
               if (!note) {
                 // 新增
                 console.debug('add note...', file.path);
-                await db.addNote(await downloadFileEncrypted(file.path, findKey), file.path, book.id!, file.cid.toString());
+                await db.addNote(await downloadFileEncrypted(file.path, findKey), file.path.split('/')[2], book.id!, file.cid.toString());
               } else {
                 if (note.updateAt) {
                   if (note.syncAt && note.syncAt >= note.updateAt && note.hash !== file.cid.toString()) {
@@ -138,9 +145,8 @@ async function checkSync() {
       }
       book.reason = reason;
     }
-
     await db.syncBook(book);
-  });
+  }
   console.log('check sync end.');
 }
 
@@ -246,13 +252,13 @@ export async function downloadFileEncrypted(ipfspath: string, findKey: (keyName:
       edata.push(chunk)
     const buff = Buffer.concat(edata)
 
-    const keyPair = await findKey(buff.slice(0, 10).toString('utf8'));
+    const keyPair = await findKey(buff.slice(0, 10).toString('utf8').trim());
     if (!keyPair) {
       throw new Error('nokey');
     }
-    const key = decryptRSA(buff.slice(0, 684).toString('utf8'), keyPair.priKey)
-    const iv = buff.slice(684, 700).toString('utf8')
-    const econtent = buff.slice(700).toString('utf8')
+    const key = decryptRSA(buff.slice(10, 694).toString('utf8'), keyPair.priKey)
+    const iv = buff.slice(694, 710).toString('utf8')
+    const econtent = buff.slice(710).toString('utf8')
     const ebuf = Buffer.from(econtent, 'hex')
     const content = decryptAES(ebuf, key, iv)
 

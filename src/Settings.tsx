@@ -110,6 +110,15 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                               onChange={(e) => setTitle(e.target.value)}
                             ></Input>
                           ) : null}
+                          <CopyOutlined
+                            title="复制Hash"
+                            onClick={() => {
+                              const ret = copy(item.hash!);
+                              ret
+                                ? message.success('复制完成' + item.hash)
+                                : message.error('复制失败');
+                            }}
+                          ></CopyOutlined>
                           <Popconfirm
                             title="删除后将移除记事本?"
                             onConfirm={() => db.deleteBook(item.id!)}
@@ -123,10 +132,15 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                       description={
                         <span title={item.hash}>
                           {item.name}{' '}
-                          <span title={getReasonText(item.reason)}>
+                          <span
+                            title={getReasonText(item.reason)}
+                            onClick={() => db.resyncBook(item)}
+                          >
                             {item.syncAt ? dayjs(item.syncAt).fromNow() : ''}
                             {item.reason && item.reason !== 'success'
                               ? '(同步失败...)'
+                              : item.syncAt
+                              ? ''
                               : '(同步中...)'}
                           </span>
                         </span>
