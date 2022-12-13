@@ -12,6 +12,7 @@ export default defineConfig({
       crypto: 'crypto-browserify'
     },
   },
+  build: { sourcemap: true },
   optimizeDeps: {
     esbuildOptions: {
       // Node.js global to browser globalThis
@@ -21,8 +22,7 @@ export default defineConfig({
       // Enable esbuild polyfill plugins
       plugins: [
         NodeGlobalsPolyfillPlugin({
-          process: true,
-          buffer: true,
+          // buffer: true,
         }),
       ],
     },

@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import shortid from 'shortid';
 import { Buffer } from 'buffer';
 import { formatStringLen } from './utils';
+window.Buffer = Buffer;
 
 let ipfs: IPFSHTTPClient | undefined;
 export function start() {
