@@ -21,6 +21,14 @@ export function start() {
       startEnabled = false;
     }
   });
+  liveQuery(async () => {
+    const actnote = await db.getActiveNote();
+    return await db.notes.filter(note => note.checkAt?.toString() === new Date(0).toString() && note.id !== actnote?.id).count();
+  }).subscribe(async count => {
+    if (count > 0) {
+      startSync();
+    }
+  })
 }
 
 async function findKey(name: string) {
@@ -154,7 +162,7 @@ async function checkSync() {
 let startEnabled = true;
 let startTimer: any;
 let isRunning = false;
-function startSync(timeout = 0) {
+export function startSync(timeout = 0) {
   if (!startEnabled) {
     return;
   }
@@ -165,11 +173,14 @@ function startSync(timeout = 0) {
     clearTimeout(startTimer);
     startTimer = null;
   }
-  isRunning = false;
   startTimer = setTimeout(() => {
     isRunning = true;
-    checkSync().then(() => startSync(60 * 1000)).catch(e => {
+    checkSync().then(() => {
+      isRunning = false;
+      startSync(60 * 1000)
+    }).catch(e => {
       console.error(e);
+      isRunning = false;
       startSync(5 * 60 * 1000);
     })
   }, timeout);
