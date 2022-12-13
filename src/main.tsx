@@ -6,6 +6,11 @@ import { ConfigProvider } from 'antd';
 import { db } from './Data';
 import { start } from './Node';
 
+console.log(
+  '%c[邀请]:你已经看到这了,可以来github共建此项目 https://github.com/JianGuoKe/ipfs-notebook',
+  'color: #43bb88; font-weight: bold; '
+);
+
 db.init()
   .then(start)
   .then(() => {
