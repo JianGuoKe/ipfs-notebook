@@ -13,22 +13,55 @@ export function download(filename: string, text: string) {
 
 export function createPem(pubKey: string, priKey: string) {
   return (pubKey.includes('PUBLIC KEY')
-    ? '\r\n'
+    ? ''
     : '-----BEGIN RSA PUBLIC KEY-----\r\n') +
     pubKey +
-    '\r\n' +
     (pubKey.includes('PUBLIC KEY')
-      ? '\r\n'
-      : '-----END RSA PUBLIC KEY-----') +
-    '\r\n' +
+      ? ''
+      : '\r\n-----END RSA PUBLIC KEY-----\r\n') +
     (priKey.includes('PRIVATE KEY')
-      ? '\r\n'
+      ? ''
       : '-----BEGIN RSA PRIVATE KEY-----\r\n') +
     priKey +
-    '\r\n' +
     (priKey.includes('PRIVATE KEY')
-      ? '\r\n'
-      : '-----END RSA PRIVATE KEY-----')
+      ? ''
+      : '\r\n-----END RSA PRIVATE KEY-----')
+}
+
+export function loadPem(txt: string, comment = true) {
+  const lines = txt.split('\n').filter(notemptyline => notemptyline).map(txt => txt.replace('\r', ''));
+  let isPub = false;
+  let isPri = false;
+  const keys = { public: '', private: '' };
+  for (const line of lines) {
+    if (line.startsWith('--') && line.includes('PUBLIC KEY') && line.endsWith('--')) {
+      isPub = true;
+      isPri = false;
+      if (!comment) {
+        continue;
+      }
+    }
+    if (line.startsWith('--') && line.includes('PRIVATE KEY') && line.endsWith('--')) {
+      isPri = true;
+      isPub = false;
+      if (!comment) {
+        continue;
+      }
+    }
+    if (isPub) {
+      if (keys.public) {
+        keys.public += '\n';
+      }
+      keys.public += line;
+    }
+    if (isPri) {
+      if (keys.private) {
+        keys.private += '\n';
+      }
+      keys.private += line;
+    }
+  }
+  return keys;
 }
 
 export function getReasonText(reason: string | undefined) {

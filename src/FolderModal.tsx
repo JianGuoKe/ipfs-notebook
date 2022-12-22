@@ -76,7 +76,7 @@ export default function ({
       {newMode === 'add' && (
         <Input
           ref={inputPriRef}
-          placeholder="文件夹Hash"
+          placeholder="文件夹名称"
           value={hash}
           onChange={(e) => setHash(e.target.value)}
           onFocus={() =>

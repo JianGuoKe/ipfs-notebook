@@ -1,8 +1,8 @@
-import { Button, InputRef, Modal, Input, message } from 'antd';
+import { Button, InputRef, Modal, Input, message, Upload } from 'antd';
 import { useRef, useState } from 'react';
 import { db } from './Data';
 import keypair from 'keypair';
-import { createPem, download } from './utils';
+import { createPem, download, loadPem } from './utils';
 
 export default function ({ open, onClose }: any) {
   const inputPKRef = useRef<InputRef>(null);
@@ -11,10 +11,14 @@ export default function ({ open, onClose }: any) {
   const [pubKey, setPubKey] = useState('');
 
   async function addNewKey() {
-    await db.addKey(priKey, pubKey);
-    setPriKey('');
-    setPubKey('');
-    onClose();
+    try {
+      await db.addKey(priKey, pubKey);
+      setPriKey('');
+      setPubKey('');
+      onClose();
+    } catch (err: any) {
+      message.warning(err.message);
+    }
   }
 
   function genKeys() {
@@ -35,13 +39,19 @@ export default function ({ open, onClose }: any) {
     );
   }
 
+  function closeModal() {
+    setPriKey('');
+    setPubKey('');
+    onClose();
+  }
+
   return (
     <Modal
       open={open}
       title="添加秘钥"
       width={650}
       onOk={addNewKey}
-      onCancel={onClose}
+      onCancel={closeModal}
       footer={[
         <Button key="back" onClick={onClose}>
           取消
@@ -56,10 +66,23 @@ export default function ({ open, onClose }: any) {
     >
       <p>
         公钥设置,公钥用于加密数据存储,如果不设置公钥,数据将以明文存储
-        <strong>不建议</strong>。 点击
-        <Button type="link" onClick={genKeys}>
+        <strong>不建议</strong>。
+        <Button type="link" size="small" onClick={genKeys}>
           生成秘钥
         </Button>
+        <Upload
+          showUploadList={false}
+          beforeUpload={async (file) => {
+            const keys = loadPem(await file.text());
+            setPriKey(keys.private);
+            setPubKey(keys.public);
+            return false;
+          }}
+        >
+          <Button type="link" size="small">
+            上传秘钥
+          </Button>
+        </Upload>
       </p>
       <Input.TextArea
         ref={inputPKRef}

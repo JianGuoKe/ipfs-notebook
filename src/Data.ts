@@ -1,5 +1,6 @@
 import Dexie, { IndexableType, Table } from 'dexie';
 import shortid from 'shortid';
+import { loadPem } from './utils';
 
 export interface Book {
   id?: number;
@@ -300,6 +301,10 @@ export class NoteBookDexie extends Dexie {
   }
 
   async addKey(priKey: string, pubKey: string) {
+    const exists = await this.keys.filter(key => loadPem(key.priKey, false).private === loadPem(priKey, false).private).first();
+    if (exists) {
+      throw new Error('秘钥已经存在');
+    }
     await this.keys.add({
       name: shortid.generate(),
       priKey,
@@ -363,6 +368,7 @@ export class NoteBookDexie extends Dexie {
     await this.books.update(book, {
       hash: book.hash,
       reason: book.reason,
+      root: book.root,
       syncAt: book.reason === 'success' ? getDateNow() : book.syncAt
     });
   }

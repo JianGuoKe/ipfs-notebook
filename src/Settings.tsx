@@ -5,6 +5,7 @@ import {
   EditOutlined,
   FolderOutlined,
   KeyOutlined,
+  ScissorOutlined,
 } from '@ant-design/icons';
 import {
   Button,
@@ -111,14 +112,25 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                             ></Input>
                           ) : null}
                           <CopyOutlined
-                            title="复制Hash"
+                            title="复制文件夹名称"
                             onClick={() => {
-                              const ret = copy(item.hash!);
+                              const ret = copy(item.name);
                               ret
-                                ? message.success('复制完成' + item.hash)
+                                ? message.success('复制完成' + item.name)
                                 : message.error('复制失败');
                             }}
                           ></CopyOutlined>
+                          {item.hash && (
+                            <ScissorOutlined
+                              title="复制文件夹Hash"
+                              onClick={() => {
+                                const ret = copy(item.hash!);
+                                ret
+                                  ? message.success('复制完成' + item.hash!)
+                                  : message.error('复制失败');
+                              }}
+                            ></ScissorOutlined>
+                          )}
                           <Popconfirm
                             title="删除后将移除记事本?"
                             onConfirm={() => db.deleteBook(item.id!)}
