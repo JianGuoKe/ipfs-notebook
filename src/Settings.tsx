@@ -112,7 +112,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                             ></Input>
                           ) : null}
                           <CopyOutlined
-                            title="复制文件夹名称"
+                            title="复制文件夹"
                             onClick={() => {
                               const ret = copy(item.name);
                               ret
@@ -122,7 +122,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           ></CopyOutlined>
                           {item.hash && (
                             <ScissorOutlined
-                              title="复制文件夹Hash"
+                              title="迁移文件夹"
                               onClick={() => {
                                 const ret = copy(item.hash!);
                                 ret
