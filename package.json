@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --open",
+    "dev": "vite --port 5173 --open --host",
     "build": "tsc && vite build --base=https://static.jianguoke.cn/note/ && node ./upCaches.js",
     "preview": "vite preview"
   },
