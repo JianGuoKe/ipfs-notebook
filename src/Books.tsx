@@ -1,5 +1,9 @@
-import { FolderOutlined, PlusOutlined } from '@ant-design/icons';
-import { Menu, MenuProps } from 'antd';
+import {
+  FolderOutlined,
+  PlusOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+import { Button, Menu, MenuProps } from 'antd';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo } from 'react';
 import { Book, db } from './Data';
@@ -28,16 +32,24 @@ function getItem(
 export default function ({
   addVisible,
   onCreateBook,
+  onSetting,
+  onBookSelected,
 }: {
   addVisible: boolean;
   onCreateBook: (mode: string) => void;
+  onSetting: () => void;
+  onBookSelected?: (bookName: string) => void;
 }) {
   const books = useLiveQuery(() =>
     db.books.filter((book) => book.enabled).toArray()
   );
   const activeBook = useLiveQuery(() => db.getActiveBook());
 
-  const onClick: MenuProps['onClick'] = (e) => {};
+  const onClick: MenuProps['onClick'] = (e) => {
+    if (onBookSelected) {
+      onBookSelected(e.key);
+    }
+  };
 
   const items: MenuProps['items'] = useMemo(() => {
     const groups = books?.reduce((servers, it) => {
@@ -111,6 +123,22 @@ export default function ({
         mode="inline"
         items={items}
       />
+      <div className="ipfs-notebook-add">
+        <Button
+          type="text"
+          icon={<PlusOutlined />}
+          onClick={() => onCreateBook('create')}
+        >
+          添加记事本
+        </Button>
+      </div>
+      <Button
+        className="ipfs-notebook-settings"
+        type="text"
+        title="记事本设置"
+        icon={<SettingOutlined />}
+        onClick={() => onSetting()}
+      ></Button>
     </>
   );
 }

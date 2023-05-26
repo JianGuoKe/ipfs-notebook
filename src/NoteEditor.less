@@ -7,15 +7,21 @@
   height: 100%;
   width: 100%;
   position: relative;
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
 
   .ql-editor {
     height: auto;
     min-height: 100%;
   }
 
+  // .editToolbar {
+  //   overflow-x: auto;
+  //   white-space: nowrap;
+  // }
+
   .editContainer {
-    padding-top: 41px;
+    // padding-top: 41px;
     height: 100%;
     width: 100%;
   }
@@ -50,10 +56,16 @@
     width: 100%;
     min-width: 400px;
     z-index: 9;
-    position: absolute;
+    // position: absolute;
+    flex: 1;
   }
   .ql-container.ql-snow {
     z-index: 1;
+  }
+
+  .showmenu {
+    float: left;
+    padding: 0 4px;
   }
 
   .ql-snow.ql-toolbar button:hover .ql-stroke,

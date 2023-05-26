@@ -1,6 +1,7 @@
 @pcolor: #ebc33f;
 
-.ipfs-notebook {
+.ipfs-notebook,
+.ipfs-notebook-drawer-books {
   height: 100%;
   background: #fff;
 
@@ -41,6 +42,8 @@
   .ipfs-notebook-menu {
     background: #fff;
     border-right: solid 1px #e1e1e1;
+    width: 100%;
+    overflow: hidden;
 
     .btns {
       padding: 0 8px;
@@ -112,5 +115,31 @@
     &:focus {
       outline: none;
     }
+  }
+}
+
+.ipfs-notebook-drawer {
+  .ant-drawer-body {
+    padding: 0;
+  }
+
+  .ipfs-notebook-menu {
+    border-right: none;
+  }
+
+  .rc-virtual-list-holder {
+    width: 100%;
+  }
+}
+
+.ipfs-notebook-drawer-books {
+  .ant-drawer-body {
+    padding: 0;
+    flex-direction: column;
+    background: #e1e1e1;
+  }
+
+  .ipfs-notebook-add button {
+    visibility: visible;
   }
 }

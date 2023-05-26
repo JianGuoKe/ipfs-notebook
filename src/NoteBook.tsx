@@ -11,6 +11,7 @@ import PPKModal from './PPKModal';
 import FolderModal from './FolderModal';
 import { db } from './Data';
 import { useLiveQuery } from 'dexie-react-hooks';
+import { getBrowserWidth } from './utils';
 const { Content } = Layout;
 
 export default function NoteBook(): React.ReactElement {
@@ -19,6 +20,7 @@ export default function NoteBook(): React.ReactElement {
   const [createBook, setCreateBook] = useState('add');
   const [openBook, setOpenBook] = useState(false);
   const [openSettings, setOpenSettings] = useState(false);
+  const [size, setSize] = useState(getBrowserWidth());
   const nokey = useLiveQuery(
     async () => !(await db.getActiveKey()) && !!(await db.getActaiveNode())
   );
@@ -57,66 +59,107 @@ export default function NoteBook(): React.ReactElement {
         showBookModal('create');
       }
     })();
+
+    function setWidth() {
+      setSize(getBrowserWidth());
+    }
+
+    window.addEventListener('resize', setWidth);
+    return () => {
+      window.removeEventListener('resize', setWidth);
+    };
   }, []);
 
   return (
     <>
-      <Layout hasSider={true} className="ipfs-notebook">
-        {options?.bookVisible && (
-          <DragSider
-            defaultWidth={options?.bookWidth}
-            onClose={() => db.setBookVisible(false)}
-            onWidthChange={(width) => db.setBookWidth(width)}
-            className="ipfs-notebook-books"
-          >
-            <BookMenu
-              addVisible={openBook}
-              onCreateBook={showBookModal}
-            ></BookMenu>
-            <div className="ipfs-notebook-add">
-              <Button
-                type="text"
-                icon={<PlusOutlined />}
-                onClick={() => showBookModal()}
+      {size !== 'xs' && (
+        <Layout hasSider={true} className="ipfs-notebook">
+          {options?.bookVisible && (
+            <DragSider
+              defaultWidth={options?.bookWidth}
+              onClose={() => db.setBookVisible(false)}
+              onWidthChange={(width) => db.setBookWidth(width)}
+              className="ipfs-notebook-books"
+            >
+              <BookMenu
+                addVisible={openBook}
+                onCreateBook={showBookModal}
+                onSetting={showDrawer}
+              ></BookMenu>
+            </DragSider>
+          )}
+          <Layout hasSider={true}>
+            {options?.menuVisible && (
+              <DragSider
+                className="ipfs-notebook-menu"
+                defaultWidth={options?.menuWidth || 300}
+                onWidthChange={(width) => db.setMenuWidth(width)}
+                minWidth={150}
               >
-                添加记事本
-              </Button>
-            </div>
-            <Button
-              className="ipfs-notebook-settings"
-              type="text"
-              title="记事本设置"
-              icon={<SettingOutlined />}
-              onClick={showDrawer}
-            ></Button>
-          </DragSider>
-        )}
-        <Layout hasSider={true}>
-          <DragSider
-            className="ipfs-notebook-menu"
-            defaultWidth={options?.menuWidth || 300}
-            onWidthChange={(width) => db.setMenuWidth(width)}
-            minWidth={150}
+                <MenuList
+                  bookVisible={!!options?.bookVisible}
+                  onCreateBook={showBookModal}
+                  onBookVisibleChange={(v) => db.setBookVisible(v)}
+                ></MenuList>
+              </DragSider>
+            )}
+            <Content>
+              <NoteEditor></NoteEditor>
+            </Content>
+          </Layout>
+          <Drawer
+            title="设置"
+            placement="right"
+            onClose={onClose}
+            open={openSettings}
           >
-            <MenuList
-              bookVisible={!!options?.bookVisible}
-              onCreateBook={showBookModal}
-              onBookVisibleChange={(v) => db.setBookVisible(v)}
-            ></MenuList>
-          </DragSider>
-          <Content>
-            <NoteEditor></NoteEditor>
-          </Content>
+            <Settings
+              onPPKAdd={showModal}
+              onFolderAdd={showBookModal}
+            ></Settings>
+          </Drawer>
         </Layout>
-        <Drawer
-          title="设置"
-          placement="right"
-          onClose={onClose}
-          open={openSettings}
-        >
-          <Settings onPPKAdd={showModal} onFolderAdd={showBookModal}></Settings>
-        </Drawer>
-      </Layout>
+      )}
+      {size === 'xs' && (
+        <>
+          <Drawer
+            width={'100%'}
+            title={false}
+            closable={false}
+            placement="left"
+            onClose={() => db.setMenuVisible(false)}
+            className="ipfs-notebook ipfs-notebook-drawer"
+            open={!!options?.menuVisible}
+          >
+            <div className="ipfs-notebook-menu">
+              <MenuList
+                bookVisible={!!options?.bookVisible}
+                onCreateBook={showBookModal}
+                onBookVisibleChange={(v) => db.setBookVisible(v)}
+                onMenuItemSelected={() => db.setMenuVisible(false)}
+              ></MenuList>
+            </div>
+
+            <Drawer
+              width={'100%'}
+              title={false}
+              closable={false}
+              placement="left"
+              onClose={() => db.setBookVisible(false)}
+              className="ipfs-notebook-books ipfs-notebook-drawer-books"
+              open={!!options?.bookVisible}
+            >
+              <BookMenu
+                addVisible={openBook}
+                onCreateBook={showBookModal}
+                onSetting={showDrawer}
+                onBookSelected={() => db.setBookVisible(false)}
+              ></BookMenu>
+            </Drawer>
+          </Drawer>
+          <NoteEditor></NoteEditor>
+        </>
+      )}
       <FolderModal
         open={openBook}
         mode={createBook}

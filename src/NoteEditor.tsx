@@ -1,12 +1,13 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useState } from 'react';
+import { ErrorInfo, useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { db } from './Data';
 import './NoteEditor.less';
 import { Button } from 'antd';
-import { DesktopOutlined } from '@ant-design/icons';
+import { DesktopOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import { getBrowserWidth } from './utils';
 
 let deferredPrompt: any = null;
 
@@ -33,6 +34,16 @@ function addToDesktop() {
 }
 
 class NoteReactQuill extends ReactQuill {
+  componentDidMount(): void {
+    super.componentDidMount();
+    db.getOptions().then((opt) => {
+      const btn = document.querySelector('#showmenu') as any;
+      if (btn) {
+        btn.style.display = opt?.menuVisible ? 'none' : 'inline-block';
+      }
+    });
+  }
+
   getEditorConfig(): ReactQuill.QuillOptions {
     const m = super.getEditorConfig();
     return {
@@ -51,9 +62,18 @@ class NoteReactQuill extends ReactQuill {
         this.editingArea = instance;
       },
     };
+    const size = getBrowserWidth();
     return (
       <div className="ipfs-editor">
         <div className="editToolbar">
+          <span
+            title="目录列表"
+            id="showmenu"
+            style={{ display: 'none', verticalAlign: 'middle' }}
+            onClick={() => db.switchMenuVisible()}
+          >
+            <MenuUnfoldOutlined />
+          </span>
           <span className="ql-formats">
             <select className="ql-header">
               <option value="1"></option>
@@ -62,6 +82,38 @@ class NoteReactQuill extends ReactQuill {
               <option value=""></option>
             </select>
           </span>
+          {size === 'xs' && (
+            <span className="ql-formats">
+              <button
+                type="button"
+                className="ql-list"
+                value="ordered"
+              ></button>
+              <button type="button" className="ql-list" value="bullet"></button>
+              <button type="button" className="ql-indent" value="-1"></button>
+              <button type="button" className="ql-indent" value="+1"></button>
+            </span>
+          )}
+          {size === 'xs' && (
+            <span className="ql-formats">
+              <button type="button" className="ql-clean"></button>
+            </span>
+          )}
+
+          {size === 'xs' && (
+            <span
+              className="ql-formats"
+              id="pwsinstallql"
+              style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
+            >
+              <Button
+                title="点击安装桌面版"
+                className="pwsinstall"
+                icon={<DesktopOutlined />}
+                onClick={() => addToDesktop()}
+              ></Button>
+            </span>
+          )}
           <span className="ql-formats">
             <select className="ql-color">
               <option value="#ff7473"></option>
@@ -82,28 +134,38 @@ class NoteReactQuill extends ReactQuill {
 
             <select className="ql-size"></select>
           </span>
-          <span className="ql-formats">
-            <button type="button" className="ql-list" value="ordered"></button>
-            <button type="button" className="ql-list" value="bullet"></button>
-            <button type="button" className="ql-indent" value="-1"></button>
-            <button type="button" className="ql-indent" value="+1"></button>
-          </span>
-          <span className="ql-formats">
-            <button type="button" className="ql-clean"></button>
-          </span>
+          {size !== 'xs' && (
+            <span className="ql-formats">
+              <button
+                type="button"
+                className="ql-list"
+                value="ordered"
+              ></button>
+              <button type="button" className="ql-list" value="bullet"></button>
+              <button type="button" className="ql-indent" value="-1"></button>
+              <button type="button" className="ql-indent" value="+1"></button>
+            </span>
+          )}
+          {size !== 'xs' && (
+            <span className="ql-formats">
+              <button type="button" className="ql-clean"></button>
+            </span>
+          )}
 
-          <span
-            className="ql-formats"
-            id="pwsinstallql"
-            style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
-          >
-            <Button
-              title="点击安装桌面版"
-              className="pwsinstall"
-              icon={<DesktopOutlined />}
-              onClick={() => addToDesktop()}
-            ></Button>
-          </span>
+          {size !== 'xs' && (
+            <span
+              className="ql-formats"
+              id="pwsinstallql"
+              style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
+            >
+              <Button
+                title="点击安装桌面版"
+                className="pwsinstall"
+                icon={<DesktopOutlined />}
+                onClick={() => addToDesktop()}
+              ></Button>
+            </span>
+          )}
         </div>
         <div className="editContainer">
           <Scrollbars autoHide>

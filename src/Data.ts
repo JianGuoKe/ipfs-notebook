@@ -5,17 +5,17 @@ import { loadPem } from './utils';
 export interface Book {
   id?: number;
   title?: string;
-  name: string;   // name 存储MFS文件名称
+  name: string; // name 存储MFS文件名称
   url: string;
   enabled: boolean;
   createAt: Date;
   updateAt: Date;
   deleteAt?: Date;
-  hash?: string;   // 文件夹hash
-  root?: string;   // root文件夹hash
-  reason?: 'nokey' | 'cidconflict' | 'success',
-  syncAt?: Date;    // hash刷新时间
-  checkAt?: Date,
+  hash?: string; // 文件夹hash
+  root?: string; // root文件夹hash
+  reason?: 'nokey' | 'cidconflict' | 'success';
+  syncAt?: Date; // hash刷新时间
+  checkAt?: Date;
   isActived: boolean;
   activedAt?: Date;
 }
@@ -30,16 +30,16 @@ export interface Note {
   id?: number;
   content: string;
   bookId?: number;
-  name?: string;        // name 存储MFS文件名称
-  enabled: boolean,
+  name?: string; // name 存储MFS文件名称
+  enabled: boolean;
   createAt: Date;
   updateAt?: Date;
   deleteAt?: Date;
   syncAt?: Date;
-  hash?: string,  // 同步hash 
-  force?: boolean,  // 本地为主更新 
-  reason?: 'nokey' | 'cidconflict' | 'nobook' | 'success',
-  checkAt?: Date;  // 同步检查时间 
+  hash?: string; // 同步hash
+  force?: boolean; // 本地为主更新
+  reason?: 'nokey' | 'cidconflict' | 'nobook' | 'success';
+  checkAt?: Date; // 同步检查时间
 }
 
 export interface Key {
@@ -54,17 +54,17 @@ export interface Key {
 
 export interface Node {
   url: string;
-  createAt: Date
+  createAt: Date;
 }
 
 export interface Option {
   id?: number;
-  bookWidth?: number,
-  bookVisible?: boolean,
-  menuWidth?: number,
-  menuVisible?: boolean,
-  activeNoteId?: number,
-  syncMin?: number  // 同步时间间隔
+  bookWidth?: number;
+  bookVisible?: boolean;
+  menuWidth?: number;
+  menuVisible?: boolean;
+  activeNoteId?: number;
+  syncMin?: number; // 同步时间间隔
 }
 
 export function getDateNow() {
@@ -86,7 +86,7 @@ export class NoteBookDexie extends Dexie {
   }
 
   getActiveBook() {
-    return this.books.filter(it => it.isActived).first();
+    return this.books.filter((it) => it.isActived).first();
   }
 
   getOptions() {
@@ -96,18 +96,24 @@ export class NoteBookDexie extends Dexie {
   async getActiveNote() {
     const options = await this.getOptions();
     const activeBook = await this.getActiveBook();
-    return (await this.notes.filter(note => note.id === options?.activeNoteId).first()) ||
-      await this.notes.filter(note => note.bookId === activeBook?.id).first();
+    return (
+      (await this.notes
+        .filter((note) => note.id === options?.activeNoteId)
+        .first()) ||
+      (await this.notes
+        .filter((note) => note.bookId === activeBook?.id)
+        .first())
+    );
   }
 
   getActiveKey() {
-    return this.keys.filter(key => key.enabled).first();
+    return this.keys.filter((key) => key.enabled).first();
   }
 
   constructor() {
     super('jianguoke.notebook');
     this.version(19).stores({
-      books: '++id, name, checkAt',// Primary key and indexed props
+      books: '++id, name, checkAt', // Primary key and indexed props
       notes: '++id, name, bookId, content,  updateAt, syncAt, checkAt',
       keys: '++id, name',
       options: '++id',
@@ -116,28 +122,33 @@ export class NoteBookDexie extends Dexie {
   }
 
   async init() {
-    if (await this.nodes.count() <= 0) {
+    if ((await this.nodes.count()) <= 0) {
       await this.nodes.add({
         url: 'https://jianguoke.cn/ipfs',
-        createAt: getDateNow()
-      })
+        createAt: getDateNow(),
+      });
     }
-    if (await this.options.count() <= 0) {
+    if ((await this.options.count()) <= 0) {
       await this.options.add({
         bookVisible: true,
-        syncMin: 10
-      })
+        menuVisible: true,
+        syncMin: 10,
+      });
     }
-    await (await this.books.filter(it => !it.name).toArray()).forEach(async book => {
+    await (
+      await this.books.filter((it) => !it.name).toArray()
+    ).forEach(async (book) => {
       await this.books.update(book.id!, {
-        name: shortid.generate()
-      })
-    })
-    await (await this.notes.filter(it => !it.name).toArray()).forEach(async note => {
+        name: shortid.generate(),
+      });
+    });
+    await (
+      await this.notes.filter((it) => !it.name).toArray()
+    ).forEach(async (note) => {
       await this.notes.update(note.id!, {
-        name: shortid.generate()
-      })
-    })
+        name: shortid.generate(),
+      });
+    });
   }
 
   async setBookWidth(bookWidth: number) {
@@ -146,28 +157,42 @@ export class NoteBookDexie extends Dexie {
       return;
     }
     await this.options.update(opt.id!, {
-      bookWidth
+      bookWidth,
     });
   }
 
   async setBookVisible(bookVisible: boolean) {
     const opt = await this.getOptions();
     await this.options.update(opt!.id!, {
-      bookVisible
+      bookVisible,
+    });
+  }
+
+  async setMenuVisible(menuVisible: boolean) {
+    const opt = await this.getOptions();
+    await this.options.update(opt!.id!, {
+      menuVisible,
+    });
+  }
+
+  async switchMenuVisible() {
+    const opt = await this.getOptions();
+    await this.options.update(opt!.id!, {
+      menuVisible: !opt!.menuVisible,
     });
   }
 
   async setMenuWidth(menuWidth: number) {
     const opt = await this.getOptions();
     await this.options.update(opt!.id!, {
-      menuWidth
+      menuWidth,
     });
   }
 
   async createEmptyBook(title: string) {
     const currentNode = await this.getActaiveNode();
     if (!currentNode?.url) {
-      throw new Error('IPFS接入节点未知,需要再设置中添加')
+      throw new Error('IPFS接入节点未知,需要再设置中添加');
     }
     const id = await this.books.add({
       ...currentNode,
@@ -177,7 +202,7 @@ export class NoteBookDexie extends Dexie {
       updateAt: getDateNow(),
       checkAt: new Date(0),
       isActived: false,
-      title
+      title,
     });
     await this.changeBook(id);
   }
@@ -185,7 +210,7 @@ export class NoteBookDexie extends Dexie {
   async addBook(name: string) {
     const currentNode = await this.getActaiveNode();
     if (!currentNode?.url) {
-      throw new Error('IPFS接入节点未知,需要再设置中添加')
+      throw new Error('IPFS接入节点未知,需要再设置中添加');
     }
     const id = await this.books.add({
       ...currentNode,
@@ -201,7 +226,7 @@ export class NoteBookDexie extends Dexie {
 
   async changeBook(id: IndexableType) {
     const books: Book[] = [];
-    await this.books.each(book => {
+    await this.books.each((book) => {
       book.isActived = book.id === id;
       books.push(book);
     });
@@ -211,8 +236,8 @@ export class NoteBookDexie extends Dexie {
 
   async updateBookTitle(book: Book) {
     await this.books.update(book, {
-      title: book.title
-    })
+      title: book.title,
+    });
   }
 
   async deleteBook(id: IndexableType) {
@@ -225,18 +250,18 @@ export class NoteBookDexie extends Dexie {
       deleteAt: getDateNow(),
       checkAt: new Date(0),
     });
-    const books = this.books.filter(book => book.enabled);
-    if (needChange && await books.count() > 0) {
+    const books = this.books.filter((book) => book.enabled);
+    if (needChange && (await books.count()) > 0) {
       await this.books.update((await books.first())!.id!, {
-        isActived: true
+        isActived: true,
       });
     }
   }
 
   async activeNote(id: IndexableType) {
     this.options.update((await this.getOptions())!.id!, {
-      activeNoteId: id
-    })
+      activeNoteId: id,
+    });
   }
 
   async addNote(content: string, name: string, bookId: number, hash?: string) {
@@ -249,11 +274,11 @@ export class NoteBookDexie extends Dexie {
       createAt: getDateNow(),
       updateAt: getDateNow(),
       syncAt: hash ? getDateNow() : undefined,
-    })
+    });
   }
 
   async upsertNote(content: string, id?: IndexableType, hash?: string) {
-    let note = await this.notes.filter(it => it.id === id).first();
+    let note = await this.notes.filter((it) => it.id === id).first();
     if (!note) {
       const activeBook = await this.getActiveBook();
       if (!activeBook) {
@@ -267,7 +292,7 @@ export class NoteBookDexie extends Dexie {
         updateAt: getDateNow(),
         hash,
         checkAt: new Date(0),
-        syncAt: hash ? getDateNow() : undefined
+        syncAt: hash ? getDateNow() : undefined,
       };
       const id = await this.notes.add(note);
       await this.activeNote(id);
@@ -277,7 +302,7 @@ export class NoteBookDexie extends Dexie {
         updateAt: getDateNow(),
         hash: hash || note.hash,
         checkAt: new Date(0),
-        syncAt: hash ? getDateNow() : note.syncAt
+        syncAt: hash ? getDateNow() : note.syncAt,
       });
     }
   }
@@ -301,7 +326,12 @@ export class NoteBookDexie extends Dexie {
   }
 
   async addKey(priKey: string, pubKey: string) {
-    const exists = await this.keys.filter(key => loadPem(key.priKey, false).private === loadPem(priKey, false).private).first();
+    const exists = await this.keys
+      .filter(
+        (key) =>
+          loadPem(key.priKey, false).private === loadPem(priKey, false).private
+      )
+      .first();
     if (exists) {
       throw new Error('秘钥已经存在');
     }
@@ -310,8 +340,8 @@ export class NoteBookDexie extends Dexie {
       priKey,
       pubKey,
       enabled: true,
-      createAt: getDateNow()
-    })
+      createAt: getDateNow(),
+    });
   }
 
   async deleteKey(id: IndexableType) {
@@ -321,13 +351,13 @@ export class NoteBookDexie extends Dexie {
   async resyncNote(note: Note | IndexableType) {
     await this.notes.update(note, {
       reason: '',
-      checkAt: new Date(0)
+      checkAt: new Date(0),
     });
   }
 
   async checkNote(note: Note) {
     await this.notes.update(note, {
-      checkAt: getDateNow()
+      checkAt: getDateNow(),
     });
   }
 
@@ -340,38 +370,41 @@ export class NoteBookDexie extends Dexie {
       hash: note.hash,
       bookId: note.bookId,
       reason: note.reason,
-      syncAt: note.reason === 'success' ? getDateNow() : note.syncAt
+      syncAt: note.reason === 'success' ? getDateNow() : note.syncAt,
     });
   }
 
   async resyncBook(book: Book) {
     await this.books.update(book, {
       reason: '',
-      checkAt: new Date(0)
+      checkAt: new Date(0),
     });
   }
 
   async checkBook(book: Book) {
     await this.books.update(book, {
-      checkAt: getDateNow()
+      checkAt: getDateNow(),
     });
   }
 
   async syncBook(book: Book) {
     if (!book.enabled && book.reason === 'success') {
       await this.books.delete(book.id!);
-      const ids = await this.notes.where('bookId').equals(book.id!).primaryKeys();
-      console.log('remove notes...', ids)
+      const ids = await this.notes
+        .where('bookId')
+        .equals(book.id!)
+        .primaryKeys();
+      console.log('remove notes...', ids);
       await this.notes.bulkDelete(ids);
-      return
+      return;
     }
     await this.books.update(book, {
       hash: book.hash,
       reason: book.reason,
       root: book.root,
-      syncAt: book.reason === 'success' ? getDateNow() : book.syncAt
+      syncAt: book.reason === 'success' ? getDateNow() : book.syncAt,
     });
   }
 }
 
-export const db = new NoteBookDexie(); 
+export const db = new NoteBookDexie();

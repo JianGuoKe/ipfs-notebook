@@ -44,10 +44,12 @@ export default function ({
   bookVisible,
   onBookVisibleChange,
   onCreateBook,
+  onMenuItemSelected,
 }: {
   bookVisible: boolean;
   onCreateBook: (mode: string) => void;
   onBookVisibleChange: (visible: boolean) => void;
+  onMenuItemSelected?: (item: any) => void;
 }) {
   const [searchVisible, setSearchVisible] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -111,6 +113,13 @@ export default function ({
     }
   }
 
+  function selectItem(item: any) {
+    db.activeNote(item.noteId!);
+    if (onMenuItemSelected) {
+      onMenuItemSelected(item);
+    }
+  }
+
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <List
@@ -167,7 +176,7 @@ export default function ({
             onScroll={onScroll}
           >
             {(item) => (
-              <List.Item onClick={() => db.activeNote(item.noteId!)}>
+              <List.Item onClick={() => selectItem(item)}>
                 <List.Item.Meta
                   avatar={
                     delMode && (

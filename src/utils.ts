@@ -1,6 +1,9 @@
 export function download(filename: string, text: string) {
   var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute(
+    'href',
+    'data:text/plain;charset=utf-8,' + encodeURIComponent(text)
+  );
   element.setAttribute('download', filename);
 
   element.style.display = 'none';
@@ -11,10 +14,23 @@ export function download(filename: string, text: string) {
   document.body.removeChild(element);
 }
 
+export function getBrowserWidth() {
+  if (window.innerWidth < 768) {
+    return 'xs';
+  } else if (window.innerWidth < 991) {
+    return 'sm';
+  } else if (window.innerWidth < 1199) {
+    return 'md';
+  } else {
+    return 'lg';
+  }
+}
+
 export function createPem(pubKey: string, priKey: string) {
-  return (pubKey.includes('PUBLIC KEY')
-    ? ''
-    : '-----BEGIN RSA PUBLIC KEY-----\r\n') +
+  return (
+    (pubKey.includes('PUBLIC KEY')
+      ? ''
+      : '-----BEGIN RSA PUBLIC KEY-----\r\n') +
     pubKey +
     (pubKey.includes('PUBLIC KEY')
       ? ''
@@ -23,25 +39,35 @@ export function createPem(pubKey: string, priKey: string) {
       ? ''
       : '-----BEGIN RSA PRIVATE KEY-----\r\n') +
     priKey +
-    (priKey.includes('PRIVATE KEY')
-      ? ''
-      : '\r\n-----END RSA PRIVATE KEY-----')
+    (priKey.includes('PRIVATE KEY') ? '' : '\r\n-----END RSA PRIVATE KEY-----')
+  );
 }
 
 export function loadPem(txt: string, comment = true) {
-  const lines = txt.split('\n').filter(notemptyline => notemptyline).map(txt => txt.replace('\r', ''));
+  const lines = txt
+    .split('\n')
+    .filter((notemptyline) => notemptyline)
+    .map((txt) => txt.replace('\r', ''));
   let isPub = false;
   let isPri = false;
   const keys = { public: '', private: '' };
   for (const line of lines) {
-    if (line.startsWith('--') && line.includes('PUBLIC KEY') && line.endsWith('--')) {
+    if (
+      line.startsWith('--') &&
+      line.includes('PUBLIC KEY') &&
+      line.endsWith('--')
+    ) {
       isPub = true;
       isPri = false;
       if (!comment) {
         continue;
       }
     }
-    if (line.startsWith('--') && line.includes('PRIVATE KEY') && line.endsWith('--')) {
+    if (
+      line.startsWith('--') &&
+      line.includes('PRIVATE KEY') &&
+      line.endsWith('--')
+    ) {
       isPri = true;
       isPub = false;
       if (!comment) {
@@ -67,21 +93,25 @@ export function loadPem(txt: string, comment = true) {
 export function getReasonText(reason: string | undefined) {
   switch (reason) {
     case 'nokey':
-      return '没有秘钥无法加密存储'
+      return '没有秘钥无法加密存储';
     case 'cidconflict':
-      return '远程更新冲突'
+      return '远程更新冲突';
     case 'nobook':
-      return '记事本未找到'
+      return '记事本未找到';
     case 'success':
-      return ''
+      return '';
     case undefined:
-      return ''
+      return '';
     default:
-      return reason
+      return reason;
   }
 }
 
-export function formatStringLen(strVal: string, len: number, padChar: string = ' ') {
+export function formatStringLen(
+  strVal: string,
+  len: number,
+  padChar: string = ' '
+) {
   if (!strVal) {
     return padChar.repeat(len);
   } else {
