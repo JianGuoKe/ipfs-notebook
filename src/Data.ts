@@ -205,6 +205,7 @@ export class NoteBookDexie extends Dexie {
       title,
     });
     await this.changeBook(id);
+    // return await this.books.get(id);
   }
 
   async addBook(name: string) {

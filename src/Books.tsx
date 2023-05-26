@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { Book, db } from './Data';
 import './Books.less';
 import { getReasonText } from './utils';
+import { trackClick } from './tracker';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -45,7 +46,8 @@ export default function ({
   );
   const activeBook = useLiveQuery(() => db.getActiveBook());
 
-  const onClick: MenuProps['onClick'] = (e) => {
+  const handleMenuClick: MenuProps['onClick'] = (e) => {
+    trackClick('select_book', '选中记事本', e.key);
     if (onBookSelected) {
       onBookSelected(e.key);
     }
@@ -58,13 +60,20 @@ export default function ({
           servers.push(new URL(it.url).hostname);
         } catch (err) {
           console.error(err);
+          1;
         }
       }
       return servers;
     }, [] as string[]);
     let bookList = groups?.map((g) => {
       return getItem(
-        g.split('.').slice(-2, 1).join('').toUpperCase(),
+        <span
+          onClick={() => {
+            trackClick('click_bookgroup', '点击分组', g);
+          }}
+        >
+          {g.split('.').slice(-2, 1).join('').toUpperCase()}
+        </span>,
         g,
         null,
         books
@@ -75,7 +84,10 @@ export default function ({
                 {it.title || '记事本'}
                 <span
                   title={getReasonText(it.reason)}
-                  onClick={() => db.resyncBook(it)}
+                  onClick={() => {
+                    trackClick('resync_book', '同步记事本', it);
+                    db.resyncBook(it);
+                  }}
                 >
                   {it.syncAt
                     ? ''
@@ -98,7 +110,10 @@ export default function ({
             无记事本
             {!addVisible && (
               <PlusOutlined
-                onClick={() => onCreateBook('create')}
+                onClick={() => {
+                  trackClick('create_book_empty', '添加记事本');
+                  onCreateBook('create');
+                }}
               ></PlusOutlined>
             )}
           </span>,
@@ -116,7 +131,7 @@ export default function ({
     <>
       <Menu
         theme="dark"
-        onClick={onClick}
+        onClick={handleMenuClick}
         className="ipfs-books"
         selectedKeys={activeBook?.id ? [activeBook?.id?.toString()] : []}
         onSelect={(e) => db.changeBook(parseInt(e.key))}
@@ -127,7 +142,10 @@ export default function ({
         <Button
           type="text"
           icon={<PlusOutlined />}
-          onClick={() => onCreateBook('create')}
+          onClick={() => {
+            trackClick('create_book', '添加记事本');
+            onCreateBook('create');
+          }}
         >
           添加记事本
         </Button>
@@ -137,7 +155,10 @@ export default function ({
         type="text"
         title="记事本设置"
         icon={<SettingOutlined />}
-        onClick={() => onSetting()}
+        onClick={() => {
+          trackClick('setting_book', '设置记事本');
+          onSetting();
+        }}
       ></Button>
     </>
   );

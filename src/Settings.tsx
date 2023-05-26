@@ -27,6 +27,7 @@ const { Panel } = Collapse;
 import './Settings.less';
 import dayjs from 'dayjs';
 import { createPem, download, getReasonText } from './utils';
+import { trackClick } from './tracker';
 const { Option } = Select;
 
 const selectBefore = (defaultValue?: string) => (
@@ -94,7 +95,14 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           {editBook !== item ? (
                             <span
                               title="修改记事本名称"
-                              onClick={() => startEditTitle(item)}
+                              onClick={() => {
+                                trackClick(
+                                  'modify_folder',
+                                  '修改记事本名称',
+                                  item
+                                );
+                                startEditTitle(item);
+                              }}
                             >
                               {item.title || '记事本'}
                               {!item.enabled ? '(删除中...)' : ''}
@@ -114,6 +122,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           <CopyOutlined
                             title="复制文件夹"
                             onClick={() => {
+                              trackClick('copy_folder', '复制文件夹', item);
                               const ret = copy(item.name);
                               ret
                                 ? message.success('复制完成' + item.name)
@@ -124,6 +133,11 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                             <ScissorOutlined
                               title="迁移文件夹"
                               onClick={() => {
+                                trackClick(
+                                  'migrate_folder',
+                                  '迁移文件夹',
+                                  item
+                                );
                                 const ret = copy(item.hash!);
                                 ret
                                   ? message.success('复制完成' + item.hash!)
@@ -133,7 +147,14 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           )}
                           <Popconfirm
                             title="删除后将移除记事本?"
-                            onConfirm={() => db.deleteBook(item.id!)}
+                            onConfirm={() => {
+                              trackClick(
+                                'delete_folder',
+                                '删除后将移除记事本',
+                                item
+                              );
+                              db.deleteBook(item.id!);
+                            }}
                             okText="删除"
                             cancelText="取消"
                           >
@@ -146,7 +167,14 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           {item.name}{' '}
                           <span
                             title={getReasonText(item.reason)}
-                            onClick={() => db.resyncBook(item)}
+                            onClick={() => {
+                              trackClick(
+                                'resync_folder_setting',
+                                '重新同步文件夹',
+                                item
+                              );
+                              db.resyncBook(item);
+                            }}
                           >
                             {item.syncAt ? dayjs(item.syncAt).fromNow() : ''}
                             {item.reason && item.reason !== 'success'
@@ -164,6 +192,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
               <p>
                 <Button
                   onClick={() => {
+                    trackClick('new_folder', '添加新目录');
                     onFolderAdd();
                   }}
                 >
@@ -189,6 +218,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           <CopyOutlined
                             title="复制秘钥"
                             onClick={() => {
+                              trackClick('copy_key', '复制秘钥');
                               const ret = copy(
                                 createPem(item.pubKey, item.priKey)
                               );
@@ -200,6 +230,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           <DownloadOutlined
                             title="下载秘钥"
                             onClick={() => {
+                              trackClick('download_key', '下载秘钥');
                               download(
                                 `key-notebook-${new Date().getTime()}.pem`,
                                 createPem(item.pubKey, item.priKey)
@@ -208,7 +239,10 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                           ></DownloadOutlined>
                           <Popconfirm
                             title="删除此秘钥?"
-                            onConfirm={() => db.deleteKey(item.id!)}
+                            onConfirm={() => {
+                              trackClick('delete_key', '删除此秘钥');
+                              db.deleteKey(item.id!);
+                            }}
                             okText="确定"
                             cancelText="取消"
                           >
@@ -231,6 +265,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
               <p>
                 <Button
                   onClick={() => {
+                    trackClick('new_key', '添加新秘钥');
                     onPPKAdd();
                   }}
                 >

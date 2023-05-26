@@ -16,6 +16,7 @@ import 'dayjs/locale/zh-cn';
 import { useEffect, useRef, useState } from 'react';
 import VirtualList, { ListRef } from 'rc-virtual-list';
 import { getReasonText } from './utils';
+import { trackClick } from './tracker';
 dayjs.extend(relativeTime);
 
 const customizeRenderEmpty = () => (
@@ -133,26 +134,38 @@ export default function ({
                 icon={
                   bookVisible ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />
                 }
-                onClick={(e) => onBookVisibleChange(!bookVisible)}
+                onClick={(e) => {
+                  trackClick('show_book', '切换记事本列表', !bookVisible);
+                  onBookVisibleChange(!bookVisible);
+                }}
               ></Button>
               <Button
                 type="text"
                 className="right"
                 title="新增文本"
                 icon={<EditOutlined />}
-                onClick={() => addNewNote()}
+                onClick={() => {
+                  trackClick('create_note', '新增文本');
+                  addNewNote();
+                }}
               ></Button>
               <Button
                 type="text"
                 className="right"
                 title="搜索文本"
                 icon={<SearchOutlined />}
-                onClick={() => setSearchVisible(!searchVisible)}
+                onClick={() => {
+                  trackClick('show_search', '切换搜索模式');
+                  setSearchVisible(!searchVisible);
+                }}
               ></Button>
               <div className="button right">
                 <Switch
                   size="small"
-                  onChange={(checked) => setDelMode(checked)}
+                  onChange={(checked) => {
+                    trackClick('show_delete', '切换删除模式', checked);
+                    setDelMode(checked);
+                  }}
                 />
               </div>
             </div>
@@ -160,7 +173,10 @@ export default function ({
               <Input.Search
                 size="small"
                 placeholder="输入查找内容..."
-                onSearch={(v) => setSearchText(v)}
+                onSearch={(v) => {
+                  trackClick('search_note', '搜索文本', v);
+                  setSearchText(v);
+                }}
               />
             )}
           </>
@@ -176,7 +192,12 @@ export default function ({
             onScroll={onScroll}
           >
             {(item) => (
-              <List.Item onClick={() => selectItem(item)}>
+              <List.Item
+                onClick={() => {
+                  trackClick('search_note', '选择文本', item);
+                  selectItem(item);
+                }}
+              >
                 <List.Item.Meta
                   avatar={
                     delMode && (
@@ -185,7 +206,10 @@ export default function ({
                         className="right"
                         title="删除记录"
                         icon={<DeleteOutlined />}
-                        onClick={() => db.deleteNote(item.noteId!)}
+                        onClick={() => {
+                          trackClick('delete_note', '删除记录', item);
+                          db.deleteNote(item.noteId!);
+                        }}
                       ></Button>
                     )
                   }
@@ -203,7 +227,10 @@ export default function ({
                         <span
                           className="status"
                           title={getReasonText(item.reason)}
-                          onClick={() => db.resyncNote(item.noteId!)}
+                          onClick={() => {
+                            trackClick('restyle_note', '重新同步记录', item);
+                            db.resyncNote(item.noteId!);
+                          }}
                         >
                           {item.reason !== 'success' && item.reason
                             ? '同步失败...'

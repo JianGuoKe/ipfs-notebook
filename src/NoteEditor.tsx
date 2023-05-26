@@ -8,6 +8,8 @@ import './NoteEditor.less';
 import { Button } from 'antd';
 import { DesktopOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { getBrowserWidth } from './utils';
+import { trackClick } from './tracker';
+import Quill from 'quill';
 
 let deferredPrompt: any = null;
 
@@ -28,9 +30,20 @@ window.addEventListener('appinstalled', () => {
 });
 
 function addToDesktop() {
+  trackClick('install_desktop', '安装桌面版');
   // 调用prompt()方法触发安装弹窗
   deferredPrompt.prompt();
   deferredPrompt = null;
+}
+
+function getParentBtn(ele: any): any {
+  if (ele?.className.includes && ele.className?.includes('ql-')) {
+    return ele;
+  }
+  if (ele?.parentElement) {
+    return getParentBtn(ele?.parentElement);
+  }
+  return null;
 }
 
 class NoteReactQuill extends ReactQuill {
@@ -55,12 +68,29 @@ class NoteReactQuill extends ReactQuill {
     const size = getBrowserWidth();
     return (
       <div className="ipfs-editor">
-        <div className="editToolbar">
+        <div
+          className="editToolbar"
+          onClick={(e) => {
+            const btn = getParentBtn(e.target);
+            const name =
+              btn?.className
+                .split(' ')
+                .find((key: string) => key.startsWith('ql-')) ||
+              'edit_tool_unknown';
+            trackClick(
+              name,
+              name.split('ql-')[1] || name,
+              btn?.getAttribute('value') || btn?.getAttribute('data-value')
+            );
+          }}
+        >
           <span className="ql-formats">
             <span
-              className="showmenu"
+              className="showmenu ql-showmenu"
               title="目录列表"
-              onClick={() => db.switchMenuVisible()}
+              onClick={() => {
+                db.switchMenuVisible();
+              }}
             >
               <MenuUnfoldOutlined />
             </span>
@@ -97,14 +127,14 @@ class NoteReactQuill extends ReactQuill {
             >
               <Button
                 title="点击安装桌面版"
-                className="pwsinstall"
+                className="pwsinstall ql-installpws"
                 icon={<DesktopOutlined />}
                 onClick={() => addToDesktop()}
               ></Button>
             </span>
           )}
           <span className="ql-formats">
-            <select className="ql-color">
+            <select className="ql-color trackbtn">
               <option value="#ff7473"></option>
               <option value="#f9c00c"></option>
               <option value="#79bd9a"></option>
@@ -149,7 +179,7 @@ class NoteReactQuill extends ReactQuill {
             >
               <Button
                 title="点击安装桌面版"
-                className="pwsinstall"
+                className="pwsinstall ql-installpws"
                 icon={<DesktopOutlined />}
                 onClick={() => addToDesktop()}
               ></Button>
@@ -181,6 +211,7 @@ export default function () {
     ) {
       return;
     }
+    // trackClick('update_note', '更新文本', { content, id: activeNote?.id });
     setValue(content);
     await db.upsertNote(content, activeNote?.id);
   }
@@ -201,9 +232,13 @@ export default function () {
       theme="snow"
       onChange={updateNote}
       onKeyDown={startEdit}
-      onBlur={(currentSelection, source, editor) =>
-        source === 'user' && stopEdit(editor.getHTML())
-      }
+      onFocus={() => {
+        trackClick('start_note', '开始编辑', activeNote);
+      }}
+      onBlur={(currentSelection, source, editor) => {
+        if (source === 'user') trackClick('stop_note', '结束编辑', activeNote);
+        source === 'user' && stopEdit(editor.getHTML());
+      }}
     ></NoteReactQuill>
   );
 }
