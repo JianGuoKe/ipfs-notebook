@@ -144,7 +144,9 @@ export default function () {
       theme="snow"
       onChange={updateNote}
       onKeyDown={startEdit}
-      onBlur={(a, b, editor) => stopEdit(editor.getHTML())}
+      onBlur={(currentSelection, source, editor) =>
+        source === 'user' && stopEdit(editor.getHTML())
+      }
     ></NoteReactQuill>
   );
 }
