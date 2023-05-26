@@ -64,22 +64,29 @@ class NoteReactQuill extends ReactQuill {
           </span>
           <span className="ql-formats">
             <select className="ql-color">
-              <option value="red"></option>
-              <option value="green"></option>
-              <option value="blue"></option>
-              <option value="orange"></option>
-              <option value="violet"></option>
+              <option value="#ff7473"></option>
+              <option value="#f9c00c"></option>
+              <option value="#79bd9a"></option>
+              <option value="#47b8e0"></option>
+              <option value="#263959"></option>
               <option value="#d0d1d2"></option>
               <option value=""></option>
             </select>
             <button type="button" className="ql-bold"></button>
             <button type="button" className="ql-italic"></button>
+            <button type="button" className="ql-strike"></button>
             <button type="button" className="ql-underline"></button>
             <button type="button" className="ql-link"></button>
+            <button type="button" className="ql-image"></button>
+            <button type="button" className="ql-blockquote"></button>
+
+            <select className="ql-size"></select>
           </span>
           <span className="ql-formats">
             <button type="button" className="ql-list" value="ordered"></button>
             <button type="button" className="ql-list" value="bullet"></button>
+            <button type="button" className="ql-indent" value="-1"></button>
+            <button type="button" className="ql-indent" value="+1"></button>
           </span>
           <span className="ql-formats">
             <button type="button" className="ql-clean"></button>
@@ -119,8 +126,7 @@ export default function () {
   async function updateNote(content: string = value!) {
     if (
       (!activeNote && !content) ||
-      content === activeNote?.content ||
-      !startEditing
+      (!startEditing && content === activeNote?.content)
     ) {
       return;
     }
