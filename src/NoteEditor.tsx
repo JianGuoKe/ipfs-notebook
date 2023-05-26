@@ -34,16 +34,6 @@ function addToDesktop() {
 }
 
 class NoteReactQuill extends ReactQuill {
-  componentDidMount(): void {
-    super.componentDidMount();
-    db.getOptions().then((opt) => {
-      const btn = document.querySelector('#showmenu') as any;
-      if (btn) {
-        btn.style.display = opt?.menuVisible ? 'none' : 'inline-block';
-      }
-    });
-  }
-
   getEditorConfig(): ReactQuill.QuillOptions {
     const m = super.getEditorConfig();
     return {
@@ -66,15 +56,14 @@ class NoteReactQuill extends ReactQuill {
     return (
       <div className="ipfs-editor">
         <div className="editToolbar">
-          <span
-            title="目录列表"
-            id="showmenu"
-            style={{ display: 'none', verticalAlign: 'middle' }}
-            onClick={() => db.switchMenuVisible()}
-          >
-            <MenuUnfoldOutlined />
-          </span>
           <span className="ql-formats">
+            <span
+              className="showmenu"
+              title="目录列表"
+              onClick={() => db.switchMenuVisible()}
+            >
+              <MenuUnfoldOutlined />
+            </span>
             <select className="ql-header">
               <option value="1"></option>
               <option value="2"></option>
