@@ -5,6 +5,7 @@ import './index.less';
 import { ConfigProvider } from 'antd';
 import { db } from './Data';
 import { start } from './Node';
+import './tracker';
 
 console.log(
   '%c[邀请]:你已经看到这了,可以来github共建此项目 https://github.com/JianGuoKe/ipfs-notebook',

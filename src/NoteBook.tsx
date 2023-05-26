@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Button, Drawer, Modal } from 'antd';
 import './NoteBook.less';
 import DragSider from './DragSider';
-import { SettingOutlined } from '@ant-design/icons';
+import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import Settings from './Settings';
 import BookMenu from './Books';
 import MenuList from './Menus';
@@ -67,11 +67,21 @@ export default function NoteBook(): React.ReactElement {
             defaultWidth={options?.bookWidth}
             onClose={() => db.setBookVisible(false)}
             onWidthChange={(width) => db.setBookWidth(width)}
+            className="ipfs-notebook-books"
           >
             <BookMenu
               addVisible={openBook}
               onCreateBook={showBookModal}
             ></BookMenu>
+            <div className="ipfs-notebook-add">
+              <Button
+                type="text"
+                icon={<PlusOutlined />}
+                onClick={() => showBookModal()}
+              >
+                添加记事本
+              </Button>
+            </div>
             <Button
               className="ipfs-notebook-settings"
               type="text"

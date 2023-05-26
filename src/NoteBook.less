@@ -4,6 +4,10 @@
   height: 100%;
   background: #fff;
 
+  .ant-menu-item-group-title {
+    color: rgba(0, 0, 0, 0.65);
+  }
+
   .ant-layout {
     background: #fff;
   }
@@ -17,6 +21,13 @@
     .ant-menu-item:not(.ant-menu-item-selected):active {
       background: @pcolor;
     }
+  }
+
+  .ant-menu-dark
+    .ant-menu-item:hover:not(.ant-menu-item-selected):not(
+      .ant-menu-submenu-selected
+    ) {
+    color: #3e3e3e;
   }
 
   .ant-menu-inline .ant-menu-item {
@@ -67,6 +78,24 @@
 
     .ant-list-item {
       cursor: pointer;
+    }
+  }
+
+  &-add {
+    width: 100%;
+    padding: 0 8px;
+    margin-top: -2px;
+
+    button {
+      width: 100%;
+      visibility: hidden;
+      color: #3e3e3e;
+    }
+  }
+
+  &-books:hover {
+    .ipfs-notebook-add button {
+      visibility: visible;
     }
   }
 
