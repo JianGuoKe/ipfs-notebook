@@ -73,6 +73,15 @@ export default function ({
           }}
         >
           {g.split('.').slice(-2, 1).join('').toUpperCase()}
+          <Button
+            type="text"
+            className="ipfs-books-add"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              trackClick('create_book', '添加记事本');
+              onCreateBook('create');
+            }}
+          ></Button>
         </span>,
         g,
         null,
@@ -138,18 +147,6 @@ export default function ({
         mode="inline"
         items={items}
       />
-      <div className="ipfs-notebook-add">
-        <Button
-          type="text"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            trackClick('create_book', '添加记事本');
-            onCreateBook('create');
-          }}
-        >
-          添加记事本
-        </Button>
-      </div>
       <Button
         className="ipfs-notebook-settings"
         type="text"

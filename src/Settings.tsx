@@ -68,7 +68,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
       <div className="ipfs-settings">
         <Scrollbars autoHide>
           <Collapse ghost>
-            <Panel header="私有数据存储 (IPFS)" key="ipfsnode">
+            <Panel header="记事本管理" key="ipfsnode">
               <p>
                 选择一个IPFS网络接入节点,数据会优先存储到当前节点,但是其他节点也能访问,不强依赖某个服务节点限制。
               </p>
@@ -200,7 +200,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                 </Button>
               </p>
             </Panel>
-            <Panel header="数据隐私保护(秘钥)" key="rsapk">
+            <Panel header="数据安全" key="rsapk">
               <p>
                 秘钥用于<strong>加密数据存储</strong>
                 在去中心化的分布式存储网络((IPFS)中,防止数据被查看,保护个人隐私数据。
