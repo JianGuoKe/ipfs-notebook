@@ -155,6 +155,19 @@ export default function NoteBook(): React.ReactElement {
                 onSetting={showDrawer}
                 onBookSelected={() => db.setBookVisible(false)}
               ></BookMenu>
+
+              <Drawer
+                width={'100%'}
+                title="设置"
+                placement="left"
+                onClose={onClose}
+                open={openSettings}
+              >
+                <Settings
+                  onPPKAdd={showModal}
+                  onFolderAdd={showBookModal}
+                ></Settings>
+              </Drawer>
             </Drawer>
           </Drawer>
           <NoteEditor></NoteEditor>

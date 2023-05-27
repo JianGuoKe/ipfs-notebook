@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ErrorInfo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
@@ -9,7 +9,6 @@ import { Button } from 'antd';
 import { DesktopOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { getBrowserWidth } from './utils';
 import { trackClick } from './tracker';
-import Quill from 'quill';
 
 let deferredPrompt: any = null;
 
@@ -51,6 +50,7 @@ class NoteReactQuill extends ReactQuill {
     const m = super.getEditorConfig();
     return {
       ...m,
+      debug: 'false',
       modules: {
         ...m.modules,
         toolbar: '.editToolbar',
