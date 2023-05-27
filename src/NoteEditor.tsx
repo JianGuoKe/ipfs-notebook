@@ -85,55 +85,20 @@ class NoteReactQuill extends ReactQuill {
           }}
         >
           <span className="ql-formats">
-            <span
+            <MenuUnfoldOutlined
               className="showmenu ql-showmenu"
               title="目录列表"
               onClick={() => {
                 db.switchMenuVisible();
               }}
-            >
-              <MenuUnfoldOutlined />
-            </span>
+            />
             <select className="ql-header">
               <option value="1"></option>
               <option value="2"></option>
               <option value="3"></option>
               <option value=""></option>
             </select>
-          </span>
-          {size === 'xs' && (
-            <span className="ql-formats">
-              <button
-                type="button"
-                className="ql-list"
-                value="ordered"
-              ></button>
-              <button type="button" className="ql-list" value="bullet"></button>
-              <button type="button" className="ql-indent" value="-1"></button>
-              <button type="button" className="ql-indent" value="+1"></button>
-            </span>
-          )}
-          {size === 'xs' && (
-            <span className="ql-formats">
-              <button type="button" className="ql-clean"></button>
-            </span>
-          )}
 
-          {size === 'xs' && (
-            <span
-              className="ql-formats"
-              id="pwsinstallql"
-              style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
-            >
-              <Button
-                title="点击安装桌面版"
-                className="pwsinstall ql-installpws"
-                icon={<DesktopOutlined />}
-                onClick={() => addToDesktop()}
-              ></Button>
-            </span>
-          )}
-          <span className="ql-formats">
             <select className="ql-color trackbtn">
               <option value="#ff7473"></option>
               <option value="#f9c00c"></option>
@@ -151,40 +116,24 @@ class NoteReactQuill extends ReactQuill {
             <button type="button" className="ql-image"></button>
             <button type="button" className="ql-blockquote"></button>
 
-            <select className="ql-size"></select>
-          </span>
-          {size !== 'xs' && (
-            <span className="ql-formats">
-              <button
-                type="button"
-                className="ql-list"
-                value="ordered"
-              ></button>
-              <button type="button" className="ql-list" value="bullet"></button>
-              <button type="button" className="ql-indent" value="-1"></button>
-              <button type="button" className="ql-indent" value="+1"></button>
-            </span>
-          )}
-          {size !== 'xs' && (
-            <span className="ql-formats">
-              <button type="button" className="ql-clean"></button>
-            </span>
-          )}
+            <button type="button" className="ql-list" value="ordered"></button>
+            <button type="button" className="ql-list" value="bullet"></button>
+            <button type="button" className="ql-indent" value="-1"></button>
+            <button type="button" className="ql-indent" value="+1"></button>
 
-          {size !== 'xs' && (
-            <span
-              className="ql-formats"
+            <select className="ql-size"></select>
+
+            {/* <button type="button" className="ql-clean"></button> */}
+
+            <Button
+              title="点击安装桌面版"
+              className="pwsinstall ql-installpws"
               id="pwsinstallql"
               style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
-            >
-              <Button
-                title="点击安装桌面版"
-                className="pwsinstall ql-installpws"
-                icon={<DesktopOutlined />}
-                onClick={() => addToDesktop()}
-              ></Button>
-            </span>
-          )}
+              icon={<DesktopOutlined />}
+              onClick={() => addToDesktop()}
+            ></Button>
+          </span>
         </div>
         <div className="editContainer">
           <Scrollbars autoHide>

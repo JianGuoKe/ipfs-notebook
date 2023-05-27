@@ -6,6 +6,7 @@ import { ConfigProvider } from 'antd';
 import { db } from './Data';
 import { start } from './Node';
 import './tracker';
+import { px2remTransformer, StyleProvider } from '@ant-design/cssinjs';
 
 console.log(
   '%c[邀请]:你已经看到这了,可以来github共建此项目 https://github.com/JianGuoKe/ipfs-notebook',
@@ -24,7 +25,15 @@ db.init()
             },
           }}
         >
-          <NoteBook />
+          <StyleProvider
+            transformers={[
+              px2remTransformer({
+                rootValue: 16,
+              }),
+            ]}
+          >
+            <NoteBook />
+          </StyleProvider>
         </ConfigProvider>
       </React.StrictMode>
     );
