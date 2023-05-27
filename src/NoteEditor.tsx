@@ -6,8 +6,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 import { db } from './Data';
 import './NoteEditor.less';
 import { Button } from 'antd';
-import { DesktopOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
-import { getBrowserWidth } from './utils';
+import { DesktopOutlined, LeftOutlined } from '@ant-design/icons';
 import { trackClick } from './tracker';
 
 let deferredPrompt: any = null;
@@ -65,7 +64,6 @@ class NoteReactQuill extends ReactQuill {
         this.editingArea = instance;
       },
     };
-    const size = getBrowserWidth();
     return (
       <div className="ipfs-editor">
         <div
@@ -85,7 +83,7 @@ class NoteReactQuill extends ReactQuill {
           }}
         >
           <span className="ql-formats">
-            <MenuUnfoldOutlined
+            <LeftOutlined
               className="showmenu ql-showmenu"
               title="目录列表"
               onClick={() => {
