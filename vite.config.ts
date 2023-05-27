@@ -30,7 +30,17 @@ export default defineConfig({
   plugins: [
     react(),
     createHtmlPlugin({
-      minify: true,
+      minify: {
+        minifyCSS: true,
+        minifyJS: true,
+        collapseWhitespace: true,
+        keepClosingSlash: true,
+        removeComments: true,
+        removeRedundantAttributes: true,
+        removeScriptTypeAttributes: true,
+        removeStyleLinkTypeAttributes: true,
+        useShortDoctype: true,
+      },
       pages: [
         {
           filename: 'index.html',
