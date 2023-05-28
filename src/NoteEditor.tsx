@@ -106,6 +106,16 @@ class NoteReactQuill extends ReactQuill {
               <option value="#d0d1d2"></option>
               <option value=""></option> */}
             </select>
+            <select className="ql-background trackbtn">
+              {/* <option value="#ff7473"></option>
+              <option value="#f9c00c"></option>
+              <option value="#79bd9a"></option>
+              <option value="#47b8e0"></option>
+              <option value="#263959"></option>
+              <option value="#d0d1d2"></option>
+              <option value=""></option> */}
+            </select>
+
             <button type="button" className="ql-bold"></button>
             <button type="button" className="ql-italic"></button>
             <button type="button" className="ql-strike"></button>
