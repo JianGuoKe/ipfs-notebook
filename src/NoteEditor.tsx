@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
-import ReactQuill from 'react-quill';
+import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { db } from './Data';
@@ -44,17 +44,41 @@ function getParentBtn(ele: any): any {
   return null;
 }
 
+const Block = Quill.import('blots/block');
+class JSONBlot extends Block {}
+JSONBlot.blotName = 'json';
+Quill.register('formats/json', JSONBlot);
+
+import QuillMarkdown from 'quilljs-markdown';
+import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
+Quill.register('modules/QuillMarkdown', QuillMarkdown, true);
+
 class NoteReactQuill extends ReactQuill {
+  quillMarkdown: any;
+
   getEditorConfig(): ReactQuill.QuillOptions {
     const m = super.getEditorConfig();
     return {
       ...m,
-      debug: 'false',
+      debug: location.hostname === 'localhost' ? undefined : 'false',
       modules: {
         ...m.modules,
         toolbar: '.editToolbar',
       },
     };
+  }
+
+  hookEditor(editor: any): void {
+    const markdownOptions = {};
+    // markdown is enabled
+    this.quillMarkdown = new QuillMarkdown(editor, markdownOptions);
+    super.hookEditor(editor);
+  }
+
+  unhookEditor(editor: any): void {
+    super.unhookEditor(editor);
+    // markdown is now disabled
+    this.quillMarkdown.destroy();
   }
 
   renderEditingArea(): JSX.Element {
@@ -97,7 +121,7 @@ class NoteReactQuill extends ReactQuill {
               <option value=""></option> */}
             </select>
 
-            <select className="ql-color trackbtn">
+            <select className="ql-color">
               {/* <option value="#ff7473"></option>
               <option value="#f9c00c"></option>
               <option value="#79bd9a"></option>
@@ -106,7 +130,7 @@ class NoteReactQuill extends ReactQuill {
               <option value="#d0d1d2"></option>
               <option value=""></option> */}
             </select>
-            <select className="ql-background trackbtn">
+            <select className="ql-background">
               {/* <option value="#ff7473"></option>
               <option value="#f9c00c"></option>
               <option value="#79bd9a"></option>
@@ -133,6 +157,7 @@ class NoteReactQuill extends ReactQuill {
 
             <select className="ql-size"></select>
 
+            <button type="button" className="ql-json"></button>
             <button type="button" className="ql-clean"></button>
 
             <Button
@@ -166,7 +191,8 @@ export default function () {
   async function updateNote(content: string = value!) {
     if (
       (!activeNote && !content) ||
-      (!startEditing && content === activeNote?.content)
+      !startEditing ||
+      content === activeNote?.content
     ) {
       return;
     }
