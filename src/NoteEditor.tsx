@@ -91,20 +91,20 @@ class NoteReactQuill extends ReactQuill {
               }}
             />
             <select className="ql-header">
-              <option value="1"></option>
+              {/* <option value="1"></option>
               <option value="2"></option>
               <option value="3"></option>
-              <option value=""></option>
+              <option value=""></option> */}
             </select>
 
             <select className="ql-color trackbtn">
-              <option value="#ff7473"></option>
+              {/* <option value="#ff7473"></option>
               <option value="#f9c00c"></option>
               <option value="#79bd9a"></option>
               <option value="#47b8e0"></option>
               <option value="#263959"></option>
               <option value="#d0d1d2"></option>
-              <option value=""></option>
+              <option value=""></option> */}
             </select>
             <button type="button" className="ql-bold"></button>
             <button type="button" className="ql-italic"></button>
@@ -112,7 +112,9 @@ class NoteReactQuill extends ReactQuill {
             <button type="button" className="ql-underline"></button>
             <button type="button" className="ql-link"></button>
             <button type="button" className="ql-image"></button>
+            {/* <button type="button" className="ql-video"></button> */}
             <button type="button" className="ql-blockquote"></button>
+            <button type="button" className="ql-code-block"></button>
 
             <button type="button" className="ql-list" value="ordered"></button>
             <button type="button" className="ql-list" value="bullet"></button>
@@ -121,7 +123,7 @@ class NoteReactQuill extends ReactQuill {
 
             <select className="ql-size"></select>
 
-            {/* <button type="button" className="ql-clean"></button> */}
+            <button type="button" className="ql-clean"></button>
 
             <Button
               title="点击安装桌面版"
