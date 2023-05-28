@@ -26,6 +26,8 @@
     "keypair": "^1.0.4",
     "postcss-px-to-viewport": "^1.1.1",
     "postcss-pxtorem": "^6.0.0",
+    "quill-better-table": "^1.2.10",
+    "quill-emoji": "^0.2.0",
     "quill1-table": "^1.6.2",
     "quilljs-markdown": "^1.2.0",
     "rc-virtual-list": "^3.4.11",

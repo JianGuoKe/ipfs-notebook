@@ -6,7 +6,12 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 import { db } from './Data';
 import './NoteEditor.less';
 import { Button } from 'antd';
-import { DesktopOutlined, LeftOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  DesktopOutlined,
+  LeftOutlined,
+  TableOutlined,
+} from '@ant-design/icons';
 import { trackClick } from './tracker';
 
 let deferredPrompt: any = null;
@@ -44,17 +49,17 @@ function getParentBtn(ele: any): any {
   return null;
 }
 
-const Block = Quill.import('blots/block');
-class JSONBlot extends Block {}
-JSONBlot.blotName = 'json';
-Quill.register('formats/json', JSONBlot);
-
 import QuillMarkdown from 'quilljs-markdown';
 import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
+import TableModule from 'quill1-table';
+
+// register module
+Quill.register('modules/table', TableModule);
 Quill.register('modules/QuillMarkdown', QuillMarkdown, true);
 
 class NoteReactQuill extends ReactQuill {
   quillMarkdown: any;
+  ready = false;
 
   getEditorConfig(): ReactQuill.QuillOptions {
     const m = super.getEditorConfig();
@@ -64,8 +69,14 @@ class NoteReactQuill extends ReactQuill {
       modules: {
         ...m.modules,
         toolbar: '.editToolbar',
+        table: true,
       },
     };
+  }
+
+  componentDidMount(): void {
+    super.componentDidMount();
+    Promise.resolve().then(() => this.watchTableBtns());
   }
 
   hookEditor(editor: any): void {
@@ -150,6 +161,19 @@ class NoteReactQuill extends ReactQuill {
             <button type="button" className="ql-blockquote"></button>
             <button type="button" className="ql-code-block"></button>
 
+            {/* <Button
+              title="插入一个表格"
+              className="inserttable"
+              id="inserttable"
+              type="link"
+              icon={<TableOutlined />}
+              onClick={() => this.insertTable()}
+            ></Button> */}
+            <button type="button" className="ql-table" value="newtable_3_3">
+              <TableOutlined />
+            </button>
+            {/* <button type="button" className="ql-table" value="insert"></button> */}
+
             <button type="button" className="ql-list" value="ordered"></button>
             <button type="button" className="ql-list" value="bullet"></button>
             <button type="button" className="ql-indent" value="-1"></button>
@@ -157,12 +181,36 @@ class NoteReactQuill extends ReactQuill {
 
             <select className="ql-size"></select>
 
-            <button type="button" className="ql-json"></button>
+            {/* <Button
+              title="JSON格式化"
+              className="jsonformatter"
+              id="jsonformatter"
+              type="link"
+              icon={
+                <svg
+                  className="jsonicon"
+                  viewBox="0 0 1024 1024"
+                  version="1.1"
+                  xmlns="http://www.w3.org/2000/svg"
+                  p-id="3481"
+                  width="200"
+                  height="200"
+                >
+                  <path
+                    d="M213.333333 128h85.333334v85.333333H213.333333v213.333334a85.333333 85.333333 0 0 1-85.333333 85.333333 85.333333 85.333333 0 0 1 85.333333 85.333333v213.333334h85.333334v85.333333H213.333333c-45.653333-11.52-85.333333-38.4-85.333333-85.333333v-170.666667a85.333333 85.333333 0 0 0-85.333333-85.333333H0v-85.333334h42.666667a85.333333 85.333333 0 0 0 85.333333-85.333333V213.333333a85.333333 85.333333 0 0 1 85.333333-85.333333m597.333334 0a85.333333 85.333333 0 0 1 85.333333 85.333333v170.666667a85.333333 85.333333 0 0 0 85.333333 85.333333h42.666667v85.333334h-42.666667a85.333333 85.333333 0 0 0-85.333333 85.333333v170.666667a85.333333 85.333333 0 0 1-85.333333 85.333333h-85.333334v-85.333333h85.333334v-213.333334a85.333333 85.333333 0 0 1 85.333333-85.333333 85.333333 85.333333 0 0 1-85.333333-85.333333V213.333333h-85.333334V128h85.333334m-298.666667 512a42.666667 42.666667 0 0 1 42.666667 42.666667 42.666667 42.666667 0 0 1-42.666667 42.666666 42.666667 42.666667 0 0 1-42.666667-42.666666 42.666667 42.666667 0 0 1 42.666667-42.666667m-170.666667 0a42.666667 42.666667 0 0 1 42.666667 42.666667 42.666667 42.666667 0 0 1-42.666667 42.666666 42.666667 42.666667 0 0 1-42.666666-42.666666 42.666667 42.666667 0 0 1 42.666666-42.666667m341.333334 0a42.666667 42.666667 0 0 1 42.666666 42.666667 42.666667 42.666667 0 0 1-42.666666 42.666666 42.666667 42.666667 0 0 1-42.666667-42.666666 42.666667 42.666667 0 0 1 42.666667-42.666667z"
+                    fill=""
+                    p-id="3482"
+                  ></path>
+                </svg>
+              }
+              onClick={() => this.formatJson()}
+            ></Button> */}
             <button type="button" className="ql-clean"></button>
 
             <Button
               title="点击安装桌面版"
-              className="pwsinstall ql-installpws"
+              className="pwsinstall"
+              type="link"
               id="pwsinstallql"
               style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
               icon={<DesktopOutlined />}
@@ -172,12 +220,92 @@ class NoteReactQuill extends ReactQuill {
         </div>
         <div className="editContainer">
           <Scrollbars autoHide>
+            <div className="ql-toolbar tablebtns">
+              <button
+                type="button"
+                className="ql-table"
+                value="append-row-above"
+              >
+                上方插入行
+              </button>
+              <button
+                type="button"
+                className="ql-table"
+                value="append-row-below"
+              >
+                下面插入行
+              </button>
+              <button
+                type="button"
+                className="ql-table"
+                value="append-col-before"
+              >
+                左侧插入列
+              </button>
+              <button
+                type="button"
+                className="ql-table"
+                value="append-col-after"
+              >
+                右侧插入列
+              </button>
+              <button type="button" className="ql-table" value="remove-col">
+                删除列
+              </button>
+              <button type="button" className="ql-table" value="remove-row">
+                删除行
+              </button>
+              <button type="button" className="ql-table" value="remove-table">
+                删除整个表格
+              </button>
+              <button type="button" className="ql-table" value="split-cell">
+                拆分单元格
+              </button>
+              <button
+                type="button"
+                className="ql-table"
+                value="merge-selection"
+              >
+                合并单元格
+              </button>
+              <button type="button" className="ql-table" value="remove-cell">
+                删除单元格
+              </button>
+              {/* <button type="button" className="ql-table" value="remove-selection"></button> */}
+              <button type="button" className="ql-table" value="undo">
+                回退
+              </button>
+              <button type="button" className="ql-table" value="redo">
+                重做
+              </button>
+            </div>
             <div className="editContainerContent" {...properties}></div>
           </Scrollbars>
         </div>
       </div>
     );
   }
+
+  watchTableBtns() {
+    if (!this.ready) {
+      this.ready = true;
+      const toolbar = this.editor!.getModule('toolbar');
+      document
+        .querySelectorAll('.ql-toolbar.tablebtns button')
+        .forEach((btn: any) => toolbar.attach(btn));
+      const tableeditors = document.querySelector('.ql-toolbar.tablebtns');
+      (this.editor as any).container.addEventListener('mouseup', (e: any) => {
+        if (e.target.tagName === 'TD' || e.target.parentNode.tagName === 'TD') {
+          // tableeditors.style.top = e.target.getBoundingClientRect().y + 'px';
+          tableeditors?.classList.add('tableeditable');
+        } else {
+          tableeditors?.classList.remove('tableeditable');
+        }
+      });
+    }
+  }
+
+  formatJson() {}
 }
 
 let startEditing = false;
