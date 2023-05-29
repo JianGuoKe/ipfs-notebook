@@ -194,7 +194,7 @@ export default function ({
             {(item) => (
               <List.Item
                 onClick={() => {
-                  trackClick('search_note', '选择文本', item);
+                  trackClick('search_note', '选择文本', item.noteId);
                   selectItem(item);
                 }}
               >
@@ -207,7 +207,7 @@ export default function ({
                         title="删除记录"
                         icon={<DeleteOutlined />}
                         onClick={() => {
-                          trackClick('delete_note', '删除记录', item);
+                          trackClick('delete_note', '删除记录', item.noteId);
                           db.deleteNote(item.noteId!);
                         }}
                       ></Button>
@@ -228,7 +228,11 @@ export default function ({
                           className="status"
                           title={getReasonText(item.reason)}
                           onClick={() => {
-                            trackClick('restyle_note', '重新同步记录', item);
+                            trackClick(
+                              'restyle_note',
+                              '重新同步记录',
+                              item.noteId
+                            );
                             db.resyncNote(item.noteId!);
                           }}
                         >

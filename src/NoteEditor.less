@@ -89,16 +89,10 @@
     color: #000;
   }
 
-  .ql-toolbar {
-    &.tablebtns {
-      display: none;
-      position: absolute;
-      z-index: 999;
-
-      &.tableeditable {
-        display: block;
-      }
-    }
+  .tableeditor {
+    display: none;
+    position: absolute;
+    z-index: 999;
   }
 
   .ql-snow.ql-toolbar button:hover .ql-stroke,
@@ -178,5 +172,21 @@
   .ql-snow.ql-toolbar .ql-picker-item.ql-selected,
   .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
     color: @pcolor;
+  }
+}
+
+.tablebtns {
+  display: flex;
+  flex-direction: column;
+
+  button {
+    border: none;
+    background: transparent;
+    padding: 5px 0;
+    cursor: pointer;
+
+    &:hover {
+      color: @pcolor;
+    }
   }
 }

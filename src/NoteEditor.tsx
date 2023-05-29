@@ -1,18 +1,21 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { useEffect, useState } from 'react';
+import { createRef, useEffect, useState } from 'react';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { db } from './Data';
 import './NoteEditor.less';
-import { Button } from 'antd';
+import { Button, Popover } from 'antd';
 import {
-  CheckOutlined,
   DesktopOutlined,
   LeftOutlined,
+  MenuOutlined,
   TableOutlined,
 } from '@ant-design/icons';
 import { trackClick } from './tracker';
+// import QuillMarkdown from 'quilljs-markdown';
+import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
+import TableModule from 'quill1-table';
 
 let deferredPrompt: any = null;
 
@@ -49,17 +52,16 @@ function getParentBtn(ele: any): any {
   return null;
 }
 
-import QuillMarkdown from 'quilljs-markdown';
-import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
-import TableModule from 'quill1-table';
-
 // register module
 Quill.register('modules/table', TableModule);
-Quill.register('modules/QuillMarkdown', QuillMarkdown, true);
+// Quill.register('modules/QuillMarkdown', QuillMarkdown, true);
 
 class NoteReactQuill extends ReactQuill {
-  quillMarkdown: any;
+  // quillMarkdown: any;
   ready = false;
+  tableToolbarSetupped = false;
+  scrollbars = createRef<Scrollbars>();
+  tableeditor = createRef<any>();
 
   getEditorConfig(): ReactQuill.QuillOptions {
     const m = super.getEditorConfig();
@@ -82,14 +84,14 @@ class NoteReactQuill extends ReactQuill {
   hookEditor(editor: any): void {
     const markdownOptions = {};
     // markdown is enabled
-    this.quillMarkdown = new QuillMarkdown(editor, markdownOptions);
+    // this.quillMarkdown = new QuillMarkdown(editor, markdownOptions);
     super.hookEditor(editor);
   }
 
   unhookEditor(editor: any): void {
     super.unhookEditor(editor);
     // markdown is now disabled
-    this.quillMarkdown.destroy();
+    // this.quillMarkdown.destroy();
   }
 
   renderEditingArea(): JSX.Element {
@@ -179,7 +181,7 @@ class NoteReactQuill extends ReactQuill {
             <button type="button" className="ql-indent" value="-1"></button>
             <button type="button" className="ql-indent" value="+1"></button>
 
-            <select className="ql-size"></select>
+            {/* <select className="ql-size"></select> */}
 
             {/* <Button
               title="JSON格式化"
@@ -219,66 +221,93 @@ class NoteReactQuill extends ReactQuill {
           </span>
         </div>
         <div className="editContainer">
-          <Scrollbars autoHide>
-            <div className="ql-toolbar tablebtns">
-              <button
-                type="button"
-                className="ql-table"
-                value="append-row-above"
-              >
-                上方插入行
-              </button>
-              <button
-                type="button"
-                className="ql-table"
-                value="append-row-below"
-              >
-                下面插入行
-              </button>
-              <button
-                type="button"
-                className="ql-table"
-                value="append-col-before"
-              >
-                左侧插入列
-              </button>
-              <button
-                type="button"
-                className="ql-table"
-                value="append-col-after"
-              >
-                右侧插入列
-              </button>
-              <button type="button" className="ql-table" value="remove-col">
-                删除列
-              </button>
-              <button type="button" className="ql-table" value="remove-row">
-                删除行
-              </button>
-              <button type="button" className="ql-table" value="remove-table">
-                删除整个表格
-              </button>
-              <button type="button" className="ql-table" value="split-cell">
-                拆分单元格
-              </button>
-              <button
-                type="button"
-                className="ql-table"
-                value="merge-selection"
-              >
-                合并单元格
-              </button>
-              <button type="button" className="ql-table" value="remove-cell">
-                删除单元格
-              </button>
-              {/* <button type="button" className="ql-table" value="remove-selection"></button> */}
-              <button type="button" className="ql-table" value="undo">
-                回退
-              </button>
-              <button type="button" className="ql-table" value="redo">
-                重做
-              </button>
-            </div>
+          <Scrollbars autoHide ref={this.scrollbars}>
+            <Popover
+              className={'tableeditor'}
+              ref={this.tableeditor}
+              trigger="click"
+              // placement="topRight"
+              afterOpenChange={() => this.setupTableToolbar()}
+              content={
+                <div
+                  className="tablebtns"
+                  onClick={() => {
+                    this.showTableEditor(
+                      document.querySelector('.td-q.ql-cell-selected')
+                    );
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="ql-table"
+                    value="append-row-above"
+                  >
+                    上方插入行
+                  </button>
+                  <button
+                    type="button"
+                    className="ql-table"
+                    value="append-row-below"
+                  >
+                    下面插入行
+                  </button>
+                  <button
+                    type="button"
+                    className="ql-table"
+                    value="append-col-before"
+                  >
+                    左侧插入列
+                  </button>
+                  <button
+                    type="button"
+                    className="ql-table"
+                    value="append-col-after"
+                  >
+                    右侧插入列
+                  </button>
+                  <button type="button" className="ql-table" value="remove-col">
+                    删除列
+                  </button>
+                  <button type="button" className="ql-table" value="remove-row">
+                    删除行
+                  </button>
+                  <button
+                    type="button"
+                    className="ql-table"
+                    value="remove-table"
+                  >
+                    删除整个表格
+                  </button>
+                  <button type="button" className="ql-table" value="split-cell">
+                    拆分单元格
+                  </button>
+                  <button
+                    type="button"
+                    className="ql-table"
+                    value="merge-selection"
+                  >
+                    合并单元格
+                  </button>
+                  <button
+                    type="button"
+                    className="ql-table"
+                    value="remove-cell"
+                  >
+                    删除单元格
+                  </button>
+                  {/* <button type="button" className="ql-table" value="remove-selection"></button> */}
+                  <button type="button" className="ql-table" value="undo">
+                    回退
+                  </button>
+                  <button type="button" className="ql-table" value="redo">
+                    重做
+                  </button>
+                </div>
+              }
+              arrow={false}
+            >
+              <MenuOutlined />
+            </Popover>
             <div className="editContainerContent" {...properties}></div>
           </Scrollbars>
         </div>
@@ -286,22 +315,64 @@ class NoteReactQuill extends ReactQuill {
     );
   }
 
+  setupTableToolbar() {
+    if (!this.tableToolbarSetupped) {
+      this.tableToolbarSetupped = true;
+      const toolbar = this.editor!.getModule('toolbar');
+      document
+        .querySelectorAll('.tablebtns button')
+        .forEach((btn: any) => toolbar.attach(btn));
+    }
+  }
+
+  showTableEditor(tdTarget: HTMLElement | null) {
+    const tableeditorDom = document.querySelector(
+      '.tableeditor'
+    ) as HTMLElement;
+    const scrollbarsDom = this.scrollbars.current?.container!;
+    if (tdTarget) {
+      const targetRect = tdTarget.getBoundingClientRect();
+      const scrollbarsRect = scrollbarsDom.getBoundingClientRect();
+      const tableLeft = parseFloat(
+        window
+          .getComputedStyle(document.querySelector('.ql-editor')!)
+          .paddingBlockStart.replace('px', '')
+      );
+      tableeditorDom.style.top =
+        targetRect.y +
+        this.scrollbars.current!.getScrollTop() -
+        scrollbarsRect.y +
+        (targetRect.height - 14) / 2 +
+        'px';
+      tableeditorDom.style.left =
+        targetRect.x +
+        this.scrollbars.current!.getScrollLeft() -
+        scrollbarsRect.x +
+        targetRect.width -
+        tableLeft -
+        5 +
+        'px';
+      tableeditorDom.style.display = 'block';
+    } else {
+      tableeditorDom.style.display = 'none';
+    }
+  }
+
   watchTableBtns() {
     if (!this.ready) {
       this.ready = true;
-      const toolbar = this.editor!.getModule('toolbar');
-      document
-        .querySelectorAll('.ql-toolbar.tablebtns button')
-        .forEach((btn: any) => toolbar.attach(btn));
-      const tableeditors = document.querySelector('.ql-toolbar.tablebtns');
-      (this.editor as any).container.addEventListener('mouseup', (e: any) => {
-        if (e.target.tagName === 'TD' || e.target.parentNode.tagName === 'TD') {
-          // tableeditors.style.top = e.target.getBoundingClientRect().y + 'px';
-          tableeditors?.classList.add('tableeditable');
-        } else {
-          tableeditors?.classList.remove('tableeditable');
+      // 下边是根据dom计算表格编辑器按钮位置
+      // 需要吧编辑器放到每个选中的单元格的右侧垂直居中显示
+      (this.editor as any).container.addEventListener(
+        'mouseup',
+        (e: MouseEvent) => {
+          const tdTarget =
+            (e.target as HTMLElement)?.tagName === 'TD'
+              ? (e.target as HTMLElement)
+              : ((e.target as any)?.parentNode as HTMLElement);
+          this.showTableEditor(tdTarget.tagName === 'TD' ? tdTarget : null);
         }
-      });
+      );
     }
   }
 
@@ -316,10 +387,14 @@ export default function () {
 
   useEffect(() => setValue(activeNote?.content), [activeNote?.id]);
 
-  async function updateNote(content: string = value!) {
+  async function updateNote(
+    content: string = value!,
+    delta?: any,
+    source?: string
+  ) {
     if (
       (!activeNote && !content) ||
-      !startEditing ||
+      (!startEditing && source !== 'user') ||
       content === activeNote?.content
     ) {
       return;
@@ -346,10 +421,11 @@ export default function () {
       onChange={updateNote}
       onKeyDown={startEdit}
       onFocus={() => {
-        trackClick('start_note', '开始编辑', activeNote);
+        trackClick('start_note', '开始编辑', activeNote?.id);
       }}
       onBlur={(currentSelection, source, editor) => {
-        if (source === 'user') trackClick('stop_note', '结束编辑', activeNote);
+        if (source === 'user')
+          trackClick('stop_note', '结束编辑', activeNote?.id);
         source === 'user' && stopEdit(editor.getHTML());
       }}
     ></NoteReactQuill>
