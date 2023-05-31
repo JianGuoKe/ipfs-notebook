@@ -72,7 +72,7 @@ export default function ({
             trackClick('click_bookgroup', '点击分组', g);
           }}
         >
-          {g.split('.').slice(-2, 1).join('').toUpperCase()}
+          {g.split('.').slice(-2)[0].toUpperCase()}
           <Button
             type="text"
             className="ipfs-books-add"
