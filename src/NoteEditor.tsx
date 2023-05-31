@@ -333,6 +333,7 @@ class NoteReactQuill extends ReactQuill {
     if (tdTarget) {
       const targetRect = tdTarget.getBoundingClientRect();
       const scrollbarsRect = scrollbarsDom.getBoundingClientRect();
+      const tableeditorRect = tableeditorDom.getBoundingClientRect();
       const tableLeft = parseFloat(
         window
           .getComputedStyle(document.querySelector('.ql-editor')!)
@@ -342,7 +343,7 @@ class NoteReactQuill extends ReactQuill {
         targetRect.y +
         this.scrollbars.current!.getScrollTop() -
         scrollbarsRect.y +
-        (targetRect.height - 14) / 2 +
+        (targetRect.height - tableeditorRect.height) / 2 +
         'px';
       tableeditorDom.style.left =
         targetRect.x +

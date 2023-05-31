@@ -76,11 +76,11 @@ export default function ({
       <Button
         key="submit"
         onClick={() => {
-          trackClick('create_folder', '添加文件夹');
+          trackClick('create_folder', '已有文件夹');
           setMode('add');
         }}
       >
-        添加文件夹
+        已有文件夹
       </Button>,
       <Button
         key="back"
@@ -108,7 +108,7 @@ export default function ({
       open={open}
       title="添加记事本"
       onOk={() => {
-        trackClick('create_folder_ok', '创建新文件夹');
+        trackClick('create_folder_ok', '新文件夹');
         addNewHash();
       }}
       onCancel={() => {

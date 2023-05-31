@@ -1,6 +1,7 @@
 import Dexie, { IndexableType, Table } from 'dexie';
 import shortid from 'shortid';
-import { loadPem } from './utils';
+import { getBrowserWidth, loadPem } from './utils';
+import keypair from 'keypair';
 
 export interface Book {
   id?: number;
@@ -122,16 +123,19 @@ export class NoteBookDexie extends Dexie {
   }
 
   async init() {
+    let isInit = false;
     if ((await this.nodes.count()) <= 0) {
       await this.nodes.add({
-        url: 'https://jianguoke.cn/ipfs',
+        url: 'https://ipfs.jianguoke.cn',
         createAt: getDateNow(),
       });
     }
     if ((await this.options.count()) <= 0) {
+      isInit = true;
+      const size = getBrowserWidth();
       await this.options.add({
-        bookVisible: true,
-        menuVisible: true,
+        bookVisible: size !== 'xs',
+        menuVisible: size !== 'xs',
         syncMin: 10,
       });
     }
@@ -149,6 +153,29 @@ export class NoteBookDexie extends Dexie {
         name: shortid.generate(),
       });
     });
+
+    if (isInit) {
+      // 自动分配一个默认秘钥
+      if ((await this.keys.count()) <= 0) {
+        const keys = keypair({
+          bits: 2048,
+        });
+        await this.addKey(keys.private, keys.public);
+      }
+
+      // 默认添加一个记事本
+      if ((await this.books.count()) <= 0) {
+        const book = await this.createEmptyBook('');
+
+        if (
+          (await this.notes
+            .filter((note) => note.bookId === book!.id)
+            .count()) <= 0
+        ) {
+          await this.upsertNote('');
+        }
+      }
+    }
   }
 
   async setBookWidth(bookWidth: number) {
@@ -205,7 +232,7 @@ export class NoteBookDexie extends Dexie {
       title,
     });
     await this.changeBook(id);
-    // return await this.books.get(id);
+    return await this.books.get(id);
   }
 
   async addBook(name: string) {

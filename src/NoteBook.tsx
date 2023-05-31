@@ -74,7 +74,7 @@ export default function NoteBook(): React.ReactElement {
     <>
       {size !== 'xs' && (
         <Layout hasSider={true} className="ipfs-notebook">
-          {options?.bookVisible && (
+          {options?.bookVisible !== false && (
             <DragSider
               defaultWidth={options?.bookWidth}
               onClose={() => db.setBookVisible(false)}
@@ -89,7 +89,7 @@ export default function NoteBook(): React.ReactElement {
             </DragSider>
           )}
           <Layout hasSider={true}>
-            {options?.menuVisible && (
+            {options?.menuVisible !== false && (
               <DragSider
                 className="ipfs-notebook-menu"
                 defaultWidth={options?.menuWidth || 300}
@@ -129,7 +129,7 @@ export default function NoteBook(): React.ReactElement {
             placement="left"
             onClose={() => db.setMenuVisible(false)}
             className="ipfs-notebook ipfs-notebook-drawer"
-            open={!!options?.menuVisible}
+            open={options?.menuVisible === true}
           >
             <div className="ipfs-notebook-menu">
               <MenuList
@@ -147,7 +147,7 @@ export default function NoteBook(): React.ReactElement {
               placement="left"
               onClose={() => db.setBookVisible(false)}
               className="ipfs-notebook-books ipfs-notebook-drawer-books"
-              open={!!options?.bookVisible}
+              open={options?.bookVisible === true}
             >
               <BookMenu
                 addVisible={openBook}
