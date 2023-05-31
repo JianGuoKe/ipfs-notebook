@@ -129,6 +129,15 @@ export class NoteBookDexie extends Dexie {
         url: 'https://ipfs.jianguoke.cn',
         createAt: getDateNow(),
       });
+    } else {
+      // 升级服务器地址
+      for (const node of await this.nodes
+        .filter((node) => node.url === 'https://jianguoke.cn/ipfs')
+        .toArray()) {
+        await this.nodes.update(node, {
+          url: 'https://ipfs.jianguoke.cn',
+        });
+      }
     }
     if ((await this.options.count()) <= 0) {
       isInit = true;
@@ -265,6 +274,12 @@ export class NoteBookDexie extends Dexie {
   async updateBookTitle(book: Book) {
     await this.books.update(book, {
       title: book.title,
+    });
+  }
+
+  async updateNodeUrl(node: Node) {
+    await this.nodes.update(node, {
+      url: node.url,
     });
   }
 

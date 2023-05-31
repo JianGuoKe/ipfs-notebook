@@ -19,7 +19,7 @@ import {
   Select,
 } from 'antd';
 import copy from 'copy-to-clipboard';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Book, db } from './Data';
 import { Scrollbars } from 'react-custom-scrollbars-2';
@@ -30,10 +30,10 @@ import { createPem, download, getReasonText } from './utils';
 import { trackClick } from './tracker';
 const { Option } = Select;
 
-const selectBefore = (defaultValue?: string) => (
-  <Select defaultValue={defaultValue || 'https://'}>
-    <Option value="http://">http://</Option>
-    <Option value="https://">https://</Option>
+const selectBefore = (defaultValue?: string, onChange?: any) => (
+  <Select value={defaultValue || 'https'} onChange={onChange}>
+    <Option value="http">http://</Option>
+    <Option value="https">https://</Option>
   </Select>
 );
 
@@ -46,6 +46,31 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
   const keys = useLiveQuery(() => db.keys.toArray(), []);
   const [title, setTitle] = useState('');
   const [editBook, setBookEdit] = useState<Book>();
+  const [nodeUrl, setNodeEdit] = useState(node?.url);
+
+  useEffect(() => {
+    setNodeEdit(node?.url);
+  }, [node]);
+
+  async function checkNodeEditEnd(e: React.KeyboardEvent) {
+    if (e.key !== 'Enter') {
+      return;
+    }
+    node!.url = nodeUrl!;
+    await db.updateNodeUrl(node!);
+  }
+
+  function handChangeBefore(v: string) {
+    const urls = nodeUrl?.split('://') || [];
+    urls[0] = v;
+    setNodeEdit(urls?.join('://'));
+  }
+
+  function handleHostName(v: string) {
+    const urls = nodeUrl?.split('://') || [];
+    urls[1] = v;
+    setNodeEdit(urls?.join('://'));
+  }
 
   function startEditTitle(item: Book) {
     if (!editBook) {
@@ -74,8 +99,18 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
               </p>
               <Input
                 ref={inputRef}
-                addonBefore={selectBefore(node?.url.split('://')[0])}
-                defaultValue={node?.url.split('://')[1]}
+                addonBefore={selectBefore(
+                  nodeUrl?.split('://')[0],
+                  handChangeBefore
+                )}
+                value={nodeUrl?.split('://')[1]}
+                onBlur={(e) => {
+                  setNodeEdit(node?.url);
+                }}
+                onKeyDown={(e) => checkNodeEditEnd(e)}
+                onChange={(e) => {
+                  handleHostName(e.target.value);
+                }}
                 onFocus={() =>
                   inputRef.current!.focus({
                     cursor: 'all',

@@ -35,6 +35,7 @@
     "react-custom-scrollbars-2": "^4.5.0",
     "react-dom": "^18.2.0",
     "react-quill": "^2.0.0",
+    "readable-stream": "^4.4.0",
     "shortid": "^2.2.16",
     "stream-browserify": "^3.0.0"
   },
