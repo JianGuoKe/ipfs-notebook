@@ -14,7 +14,7 @@ import {
 } from '@ant-design/icons';
 import { trackClick } from './tracker';
 // import QuillMarkdown from 'quilljs-markdown';
-import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
+// import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
 import TableModule from 'quill1-table';
 
 let deferredPrompt: any = null;
