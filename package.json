@@ -21,6 +21,7 @@
     "dayjs": "^1.11.6",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",
+    "gbv-login-client": "^1.0.3",
     "global": "^4.4.0",
     "ipfs-http-client": "^59.0.0",
     "keypair": "^1.0.4",

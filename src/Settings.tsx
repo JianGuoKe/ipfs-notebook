@@ -2,9 +2,9 @@ import {
   CopyOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  EditOutlined,
   FolderOutlined,
   KeyOutlined,
+  LogoutOutlined,
   ScissorOutlined,
 } from '@ant-design/icons';
 import {
@@ -17,6 +17,7 @@ import {
   message,
   Popconfirm,
   Select,
+  Space,
 } from 'antd';
 import copy from 'copy-to-clipboard';
 import React, { useEffect, useRef, useState } from 'react';
@@ -28,6 +29,7 @@ import './Settings.less';
 import dayjs from 'dayjs';
 import { createPem, download, getReasonText } from './utils';
 import { trackClick } from './tracker';
+import { login, logout, useLogin } from './Client';
 const { Option } = Select;
 
 const selectBefore = (defaultValue?: string, onChange?: any) => (
@@ -47,6 +49,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
   const [title, setTitle] = useState('');
   const [editBook, setBookEdit] = useState<Book>();
   const [nodeUrl, setNodeEdit] = useState(node?.url);
+  const user = useLogin();
 
   useEffect(() => {
     setNodeEdit(node?.url);
@@ -306,6 +309,53 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                 >
                   添加新秘钥
                 </Button>
+              </p>
+            </Panel>
+            <Panel header="账户同步" key="acc">
+              <p>
+                登录相同的账户,自动同步相同账户间的记事本文件夹和秘钥设置,快速数据共享。
+              </p>
+              {user && (
+                <p>
+                  已经登录: {user.name}
+                  <Button
+                    danger
+                    type="text"
+                    onClick={() => {
+                      trackClick('logout', '退出登录');
+                      logout();
+                    }}
+                  >
+                    退出
+                  </Button>
+                </p>
+              )}
+              <p>
+                {user ? (
+                  <Space>
+                    <Button
+                      onClick={() => {
+                        trackClick('sync_user', '同步数据');
+                        logout();
+                      }}
+                    >
+                      同步数据
+                    </Button>
+                  </Space>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      trackClick('login', '登录账户');
+                      try {
+                        login();
+                      } catch (err) {
+                        message.error((err as any).message);
+                      }
+                    }}
+                  >
+                    登录账户
+                  </Button>
+                )}
               </p>
             </Panel>
           </Collapse>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Layout, Button, Drawer, Modal } from 'antd';
+import { Layout, Button, Drawer, Modal, Avatar } from 'antd';
 import './NoteBook.less';
 import DragSider from './DragSider';
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons';
@@ -12,6 +12,7 @@ import FolderModal from './FolderModal';
 import { db } from './Data';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { getBrowserWidth } from './utils';
+import { useLogin } from './Client';
 const { Content } = Layout;
 
 export default function NoteBook(): React.ReactElement {
@@ -24,6 +25,7 @@ export default function NoteBook(): React.ReactElement {
   const nokey = useLiveQuery(
     async () => !(await db.getActiveKey()) && !!(await db.getActaiveNode())
   );
+  const user = useLogin();
 
   useEffect(() => {
     nokey && setOpenPPK(true);
@@ -112,6 +114,11 @@ export default function NoteBook(): React.ReactElement {
             placement="right"
             onClose={onClose}
             open={openSettings}
+            extra={
+              <Avatar className="ipfs-nodebook-user">
+                {user.name?.substring(0, 1).toUpperCase()}
+              </Avatar>
+            }
           >
             <Settings
               onPPKAdd={showModal}
@@ -162,6 +169,11 @@ export default function NoteBook(): React.ReactElement {
                 placement="left"
                 onClose={onClose}
                 open={openSettings}
+                extra={
+                  <Avatar className="ipfs-nodebook-user">
+                    {user.name?.substring(0, 1).toUpperCase()}
+                  </Avatar>
+                }
               >
                 <Settings
                   onPPKAdd={showModal}
