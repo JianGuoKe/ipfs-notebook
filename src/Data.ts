@@ -60,6 +60,7 @@ export interface Node {
 
 export interface Option {
   id?: number;
+  clientId?: string;
   bookWidth?: number;
   bookVisible?: boolean;
   menuWidth?: number;
@@ -147,6 +148,13 @@ export class NoteBookDexie extends Dexie {
         menuVisible: size !== 'xs',
         syncMin: 10,
       });
+    }
+    for (const opt of await this.options.toArray()) {
+      if (!opt.clientId) {
+        await this.options.update(opt, {
+          clientId: shortid.generate(),
+        });
+      }
     }
     await (
       await this.books.filter((it) => !it.name).toArray()
@@ -244,13 +252,15 @@ export class NoteBookDexie extends Dexie {
     return await this.books.get(id);
   }
 
-  async addBook(name: string) {
+  async addBook(name: string, root?: string, hash?: string) {
     const currentNode = await this.getActaiveNode();
     if (!currentNode?.url) {
       throw new Error('IPFS接入节点未知,需要再设置中添加');
     }
     const id = await this.books.add({
       ...currentNode,
+      root,
+      hash,
       name,
       enabled: true,
       createAt: getDateNow(),

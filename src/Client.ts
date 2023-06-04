@@ -10,10 +10,31 @@ const client = new LoginClient(loginServer.split('://')[1], {
   ssl: loginServer.includes('https://'),
 });
 
+let retryCount = 0;
+
 // Alternatively, you can set an event listener for `null` which receives all events:
 client.addEventListener(null, (event: any) => {
   if (event.type !== events._received && event.type !== events._sent) {
-    trackClick('client_event', event.type, event);
+    if (event.type === events.error) {
+      if (event.error.message.includes('No reply from server')) {
+        // 减少retry的log
+        if (retryCount < 3) {
+          trackClick(
+            'client_event',
+            event.type + retryCount,
+            event.error.message
+          );
+        }
+        retryCount++;
+        if (retryCount > 100) {
+          retryCount = 0;
+        }
+      } else {
+        trackClick('client_event', event.type, event.error.message);
+      }
+    } else {
+      trackClick('client_event', event.type);
+    }
   }
   switch (event.type) {
     case events.login:
@@ -88,3 +109,31 @@ client.connect();
 
 //   // If you eventually want to disconnect from login server (fires disconnect event one last time):
 //   client.disconnect()
+
+async function handleErrors(response: any) {
+  if (!response.ok) {
+    throw Error((await response.text()) || response.statusText);
+  }
+  return response;
+}
+
+export async function getFolderList() {
+  const obj =
+    (await (
+      await fetch(`${loginServer}/profile/ipfs.folders`, {
+        credentials: 'include',
+      }).then(handleErrors)
+    ).json()) || {};
+  return [obj.value || [], obj.__v];
+}
+
+export async function upsertFolderList(value: any[], __v: string) {
+  await fetch(`${loginServer}/profile/ipfs.folders`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ value, __v }),
+  }).then(handleErrors);
+}
