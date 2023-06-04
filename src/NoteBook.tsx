@@ -114,11 +114,6 @@ export default function NoteBook(): React.ReactElement {
             placement="right"
             onClose={onClose}
             open={openSettings}
-            extra={
-              <Avatar className="ipfs-nodebook-user">
-                {user.name?.substring(0, 1).toUpperCase()}
-              </Avatar>
-            }
           >
             <Settings
               onPPKAdd={showModal}
@@ -169,11 +164,6 @@ export default function NoteBook(): React.ReactElement {
                 placement="left"
                 onClose={onClose}
                 open={openSettings}
-                extra={
-                  <Avatar className="ipfs-nodebook-user">
-                    {user.name?.substring(0, 1).toUpperCase()}
-                  </Avatar>
-                }
               >
                 <Settings
                   onPPKAdd={showModal}

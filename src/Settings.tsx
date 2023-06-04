@@ -319,7 +319,6 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                 <p>
                   已经登录: {user.name}
                   <Button
-                    danger
                     type="text"
                     onClick={() => {
                       trackClick('logout', '退出登录');
@@ -334,6 +333,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                 {user ? (
                   <Space>
                     <Button
+                      danger
                       onClick={() => {
                         trackClick('sync_user', '同步数据');
                         logout();
