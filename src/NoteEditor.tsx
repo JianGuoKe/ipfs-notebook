@@ -16,6 +16,7 @@ import { trackClick } from './tracker';
 // import QuillMarkdown from 'quilljs-markdown';
 // import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
 import TableModule from 'quill1-table';
+import { NotificationInstance } from 'antd/es/notification/interface';
 
 let deferredPrompt: any = null;
 
@@ -28,6 +29,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   if (pwa) {
     pwa.style.display = 'inline-block';
   }
+  showInstallTip();
 });
 
 // 安装完成后触发,即点击安装弹窗中的“安装”后被触发
@@ -382,7 +384,38 @@ class NoteReactQuill extends ReactQuill {
   formatJson() {}
 }
 
+let tipApi: NotificationInstance;
 let startEditing = false;
+
+function showInstallTip() {
+  if (!tipApi || isFirstShow || !deferredPrompt){
+    return;
+  }
+  db.getOptions().then((opt) => {
+    if (opt?.firstOpen !== false && !isFirstShow && deferredPrompt) {
+      isFirstShow = true;
+      tipApi.open({
+        message: '桌面版',
+        description: '可以把记事本在桌面创建一个快速启动的应用',
+        duration: null,
+        key: 'showInstallTip',
+        btn: (
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => {
+              tipApi.destroy('showInstallTip');
+              addToDesktop(true); 
+            }}
+          >
+            安装桌面版
+          </Button>
+        ),
+        onClose: () => db.setFirstOpen(false),
+      });
+    }
+  });
+}
 
 export default function () {
   const activeNote = useLiveQuery(() => db.getActiveNote());
@@ -392,26 +425,8 @@ export default function () {
   useEffect(() => setValue(activeNote?.content), [activeNote?.id]);
 
   useEffect(() => {
-    db.getOptions().then((opt) => {
-      if (opt?.firstOpen !== false && !isFirstShow) {
-        isFirstShow = true;
-        api.open({
-          message: '桌面版',
-          description: '可以把记事本在桌面创建一个快速启动的应用', 
-          duration: null,
-          btn: (
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => addToDesktop(true)}
-            >
-              安装桌面版
-            </Button>
-          ),
-          onClick: () => db.setFirstOpen(false),
-        });
-      }
-    });
+    tipApi = api;
+    showInstallTip();
   }, []);
 
   async function updateNote(
