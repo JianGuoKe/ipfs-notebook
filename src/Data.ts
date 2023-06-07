@@ -67,6 +67,7 @@ export interface Option {
   menuVisible?: boolean;
   activeNoteId?: number;
   syncMin?: number; // 同步时间间隔
+  firstOpen?: boolean; // 是否不是首次打开
 }
 
 export function getDateNow() {
@@ -193,6 +194,16 @@ export class NoteBookDexie extends Dexie {
         }
       }
     }
+  }
+
+  async setFirstOpen(firstOpen: boolean = false) {
+    const opt = await this.getOptions();
+    if (!opt) {
+      return;
+    }
+    await this.options.update(opt.id!, {
+      firstOpen,
+    });
   }
 
   async setBookWidth(bookWidth: number) {

@@ -5,7 +5,7 @@ import 'react-quill/dist/quill.snow.css';
 import { Scrollbars } from 'react-custom-scrollbars-2';
 import { db } from './Data';
 import './NoteEditor.less';
-import { Button, Popover } from 'antd';
+import { Button, Popover, notification } from 'antd';
 import {
   DesktopOutlined,
   LeftOutlined,
@@ -35,8 +35,8 @@ window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
 });
 
-function addToDesktop() {
-  trackClick('install_desktop', '安装桌面版');
+function addToDesktop(firstOpen = false) {
+  trackClick('install_desktop', '安装桌面版', firstOpen);
   // 调用prompt()方法触发安装弹窗
   deferredPrompt.prompt();
   deferredPrompt = null;
@@ -55,6 +55,8 @@ function getParentBtn(ele: any): any {
 // register module
 Quill.register('modules/table', TableModule);
 // Quill.register('modules/QuillMarkdown', QuillMarkdown, true);
+
+let isFirstShow = false;
 
 class NoteReactQuill extends ReactQuill {
   // quillMarkdown: any;
@@ -385,8 +387,32 @@ let startEditing = false;
 export default function () {
   const activeNote = useLiveQuery(() => db.getActiveNote());
   const [value, setValue] = useState(activeNote?.content);
+  const [api, contextHolder] = notification.useNotification();
 
   useEffect(() => setValue(activeNote?.content), [activeNote?.id]);
+
+  useEffect(() => {
+    db.getOptions().then((opt) => {
+      if (opt?.firstOpen !== false && !isFirstShow) {
+        isFirstShow = true;
+        api.open({
+          message: '桌面版',
+          description: '可以把记事本在桌面创建一个快速启动的应用', 
+          duration: null,
+          btn: (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => addToDesktop(true)}
+            >
+              安装桌面版
+            </Button>
+          ),
+          onClick: () => db.setFirstOpen(false),
+        });
+      }
+    });
+  }, []);
 
   async function updateNote(
     content: string = value!,
@@ -415,20 +441,23 @@ export default function () {
   }
 
   return (
-    <NoteReactQuill
-      key={activeNote?.id}
-      value={value}
-      theme="snow"
-      onChange={updateNote}
-      onKeyDown={startEdit}
-      onFocus={() => {
-        trackClick('start_note', '开始编辑', activeNote?.id);
-      }}
-      onBlur={(currentSelection, source, editor) => {
-        if (source === 'user')
-          trackClick('stop_note', '结束编辑', activeNote?.id);
-        source === 'user' && stopEdit(editor.getHTML());
-      }}
-    ></NoteReactQuill>
+    <>
+      <NoteReactQuill
+        key={activeNote?.id}
+        value={value}
+        theme="snow"
+        onChange={updateNote}
+        onKeyDown={startEdit}
+        onFocus={() => {
+          trackClick('start_note', '开始编辑', activeNote?.id);
+        }}
+        onBlur={(currentSelection, source, editor) => {
+          if (source === 'user')
+            trackClick('stop_note', '结束编辑', activeNote?.id);
+          source === 'user' && stopEdit(editor.getHTML());
+        }}
+      ></NoteReactQuill>
+      {contextHolder}
+    </>
   );
 }

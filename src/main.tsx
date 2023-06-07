@@ -17,8 +17,11 @@ console.log(
 `
 );
 console.log(
-  '%c[邀请]:你已经看到这了,可以来github共建此项目 https://github.com/JianGuoKe/ipfs-notebook',
+  '%c     [邀请]:你已经看到这了,可以来github共建此项目',
   'color: #43bb88; font-weight: bold; '
+);
+console.log(
+  '   https://github.com/JianGuoKe/ipfs-notebook'
 );
 
 db.init()
