@@ -60,7 +60,6 @@ export default function ({
           servers.push(new URL(it.url).hostname);
         } catch (err) {
           console.error(err);
-          1;
         }
       }
       return servers;

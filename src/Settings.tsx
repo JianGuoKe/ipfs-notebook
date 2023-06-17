@@ -409,7 +409,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                             </span>
                             {syncFolders.filter(
                               (it) => it.isSyncing && !it.root
-                            ).length && (
+                            ).length ? (
                               <span
                                 title={syncFolders
                                   .filter((it) => it.isSyncing && !it.root)
@@ -424,7 +424,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                                 }个未在IPFS网络保存无法账户间同步`}
                                 )
                               </span>
-                            )}
+                            ) : null}
                           </>
                         ) : error ? (
                           '获取数据失败:' + error.message
