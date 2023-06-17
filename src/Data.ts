@@ -145,7 +145,7 @@ export class NoteBookDexie extends Dexie {
       isInit = true;
       const size = getBrowserWidth();
       await this.options.add({
-        bookVisible: size !== 'xs',
+        bookVisible: size !== 'xs' && size !== 'sm',
         menuVisible: size !== 'xs',
         syncMin: 10,
       });

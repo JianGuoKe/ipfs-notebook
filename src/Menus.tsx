@@ -5,6 +5,7 @@ import {
   EditOutlined,
   SmileOutlined,
   DeleteOutlined,
+  MenuOutlined,
 } from '@ant-design/icons';
 import { Button, ConfigProvider, List, Input, Switch } from 'antd';
 import dayjs from 'dayjs';
@@ -131,9 +132,7 @@ export default function ({
               <Button
                 type="text"
                 title="记事本列表"
-                icon={
-                  bookVisible ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />
-                }
+                icon={<MenuOutlined />}
                 onClick={(e) => {
                   trackClick('show_book', '切换记事本列表', !bookVisible);
                   onBookVisibleChange(!bookVisible);
