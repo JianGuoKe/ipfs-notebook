@@ -474,15 +474,10 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
             </Panel>
             <Panel header="开发者社区" key="dev">
               <p>
-                进入开发者社区一起共建坚果壳开源社区,提出你的意见跟踪开发进展。
+                进入开发者社区一起讨论功能问题和改进建议,
+                这里你还能看到开发者的改进计划和未来新特性。
               </p>
-              <Button
-                type="primary"
-                onClick={() => openDev('category/4/建议与问题')}
-              >
-                反馈问题
-              </Button>
-              <Button type="link" onClick={() => openDev()}>
+              <Button type="primary" onClick={() => openDev()}>
                 打开社区
               </Button>
             </Panel>

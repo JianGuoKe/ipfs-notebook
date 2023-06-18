@@ -220,7 +220,7 @@ class NoteReactQuill extends ReactQuill {
               type="link"
               className="devbtn"
               icon={<QuestionCircleOutlined />}
-              onClick={() => openDev('category/2/产品讨论')}
+              onClick={() => openDev('category/2')}
             ></Button>
 
             <Button
