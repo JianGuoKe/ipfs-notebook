@@ -26,7 +26,7 @@ import { Scrollbars } from 'react-custom-scrollbars-2';
 const { Panel } = Collapse;
 import './Settings.less';
 import dayjs from 'dayjs';
-import { createPem, download, getReasonText } from './utils';
+import { createPem, download, getReasonText, openDev } from './utils';
 import { trackClick } from './tracker';
 import {
   getFolderList,
@@ -471,6 +471,20 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                   </Button>
                 )}
               </div>
+            </Panel>
+            <Panel header="开发者社区" key="dev">
+              <p>
+                进入开发者社区一起共建坚果壳开源社区,提出你的意见跟踪开发进展。
+              </p>
+              <Button
+                type="primary"
+                onClick={() => openDev('category/4/建议与问题')}
+              >
+                反馈问题
+              </Button>
+              <Button type="link" onClick={() => openDev()}>
+                打开社区
+              </Button>
             </Panel>
           </Collapse>
         </Scrollbars>
