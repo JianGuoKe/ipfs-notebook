@@ -10,6 +10,7 @@ import {
   DesktopOutlined,
   LeftOutlined,
   MenuOutlined,
+  QuestionCircleOutlined,
   TableOutlined,
 } from '@ant-design/icons';
 import { trackClick } from './tracker';
@@ -17,6 +18,7 @@ import { trackClick } from './tracker';
 // import 'quilljs-markdown/dist/quilljs-markdown-common-style.css'; // recommend import css, @option improve common style
 import TableModule from 'quill1-table';
 import { NotificationInstance } from 'antd/es/notification/interface';
+import { openDev } from './utils';
 
 let deferredPrompt: any = null;
 
@@ -222,6 +224,12 @@ class NoteReactQuill extends ReactQuill {
               icon={<DesktopOutlined />}
               onClick={() => addToDesktop()}
             ></Button>
+
+            <Button
+              title="社区讨论"
+              icon={<QuestionCircleOutlined />}
+              onClick={() => openDev('category/2/产品讨论')}
+            ></Button>
           </span>
         </div>
         <div className="editContainer">
@@ -388,7 +396,7 @@ let tipApi: NotificationInstance;
 let startEditing = false;
 
 function showInstallTip() {
-  if (!tipApi || isFirstShow || !deferredPrompt){
+  if (!tipApi || isFirstShow || !deferredPrompt) {
     return;
   }
   db.getOptions().then((opt) => {
@@ -405,7 +413,7 @@ function showInstallTip() {
             size="small"
             onClick={() => {
               tipApi.destroy('showInstallTip');
-              addToDesktop(true); 
+              addToDesktop(true);
             }}
           >
             安装桌面版

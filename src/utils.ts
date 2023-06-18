@@ -125,3 +125,7 @@ export function formatStringLen(
     }
   }
 }
+
+export function openDev(category = '') {
+  window.open(`https://dev.jianguoke.cn/${category}`, 'dev');
+}
