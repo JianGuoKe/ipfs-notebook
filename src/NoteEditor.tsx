@@ -216,6 +216,14 @@ class NoteReactQuill extends ReactQuill {
             <button type="button" className="ql-clean"></button>
 
             <Button
+              title="社区讨论"
+              type="link"
+              className="devbtn"
+              icon={<QuestionCircleOutlined />}
+              onClick={() => openDev('category/2/产品讨论')}
+            ></Button>
+
+            <Button
               title="点击安装桌面版"
               className="pwsinstall"
               type="link"
@@ -223,12 +231,6 @@ class NoteReactQuill extends ReactQuill {
               style={{ display: deferredPrompt ? 'inline-block' : 'none' }}
               icon={<DesktopOutlined />}
               onClick={() => addToDesktop()}
-            ></Button>
-
-            <Button
-              title="社区讨论"
-              icon={<QuestionCircleOutlined />}
-              onClick={() => openDev('category/2/产品讨论')}
             ></Button>
           </span>
         </div>
