@@ -12,7 +12,6 @@ import FolderModal from './FolderModal';
 import { db } from './Data';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { getBrowserWidth } from './utils';
-import { useLogin } from './Client';
 const { Content } = Layout;
 
 export default function NoteBook(): React.ReactElement {
@@ -23,9 +22,8 @@ export default function NoteBook(): React.ReactElement {
   const [openSettings, setOpenSettings] = useState(false);
   const [size, setSize] = useState(getBrowserWidth());
   const nokey = useLiveQuery(
-    async () => !(await db.getActiveKey()) && !!(await db.getActaiveNode())
+    async () => !((await db.keys.count()) > 0) && !!(await db.getActaiveNode())
   );
-  const user = useLogin();
 
   useEffect(() => {
     nokey && setOpenPPK(true);

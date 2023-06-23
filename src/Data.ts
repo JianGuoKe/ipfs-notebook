@@ -19,6 +19,7 @@ export interface Book {
   checkAt?: Date;
   isActived: boolean;
   activedAt?: Date;
+  activeKey?: string;
 }
 
 export interface Menu {

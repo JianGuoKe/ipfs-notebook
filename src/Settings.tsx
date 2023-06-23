@@ -14,9 +14,9 @@ import {
   InputRef,
   List,
   message,
+  Modal,
   Popconfirm,
   Select,
-  Space,
 } from 'antd';
 import copy from 'copy-to-clipboard';
 import React, { useEffect, useRef, useState } from 'react';
@@ -28,13 +28,7 @@ import './Settings.less';
 import dayjs from 'dayjs';
 import { createPem, download, getReasonText, openDev } from './utils';
 import { trackClick } from './tracker';
-import {
-  getFolderList,
-  login,
-  logout,
-  upsertFolderList,
-  useLogin,
-} from './Client';
+import { getFolderList, upsertFolderList, useLogin } from './Client';
 const { Option } = Select;
 
 const selectBefore = (defaultValue?: string, onChange?: any) => (
@@ -55,6 +49,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
   const [editBook, setBookEdit] = useState<Book>();
   const [nodeUrl, setNodeEdit] = useState(node?.url);
   const user = useLogin();
+  const [openCode, setOpenCode] = useState(0);
   const [messageApi, contextHolder] = message.useMessage();
 
   useEffect(() => {
@@ -146,6 +141,8 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
 
   const syncCount =
     syncFolders?.filter((it) => it.isSyncing && it.root).length || 0;
+
+  function synccode() {}
 
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
@@ -367,7 +364,7 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                 </Button>
               </p>
             </Panel>
-            <Panel header="账户同步" key="acc">
+            {/*  <Panel header="账户同步" key="acc">
               <p>
                 登录相同的账户,自动同步相同账户间的记事本文件夹和秘钥设置,快速数据共享。
               </p>
@@ -456,8 +453,8 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                       <Button danger>同步数据</Button>
                     </Popconfirm>
                   </Space>
-                ) : (
-                  <Button
+                ) : ( 
+                     <Button
                     onClick={() => {
                       trackClick('login', '登录账户');
                       try {
@@ -468,9 +465,53 @@ export default function Settings({ onPPKAdd, onFolderAdd }: any) {
                     }}
                   >
                     登录账户
-                  </Button>
+                  </Button>   
                 )}
-              </div>
+              </div>  
+            </Panel>*/}
+            <Panel header="数据同步" key="synccode">
+              <p>
+                数据同步码会在多个设备间进行记事本和秘钥同步，
+                必须保证多个设备同时输入相同的同步码同步。
+              </p>
+              <Modal
+                title="数据同步"
+                open={!!openCode}
+                footer={
+                  <>
+                    <Button
+                      type="text"
+                      disabled
+                      onClick={() => {
+                        try {
+                          synccode();
+                        } catch (err) {
+                          messageApi.error((err as any).message);
+                        }
+                      }}
+                    >
+                      准备同步
+                    </Button>
+                  </>
+                }
+                onCancel={() => setOpenCode(0)}
+                okButtonProps={{ disabled: true }}
+              >
+                <p>
+                  输入 <strong style={{ color: 'green' }}>{openCode}</strong>{' '}
+                  同步此设备上的
+                  <strong>{folders?.length || 0}</strong>个记事本
+                </p>
+              </Modal>
+              <Button
+                onClick={() => {
+                  trackClick('synccode', '同步连接');
+                  const code = Math.floor(Math.random() * 1000000);
+                  setOpenCode(code);
+                }}
+              >
+                同步连接
+              </Button>
             </Panel>
             <Panel header="开发者社区" key="dev">
               <p>

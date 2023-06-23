@@ -66,7 +66,11 @@ async function checkSync() {
     await db.checkNote(note);
     const book = await db.books.get(note.bookId!);
     if (book) {
-      if (key) {
+      const bookKey =
+        (book.activeKey
+          ? await db.keys.filter((it) => it.name === book.activeKey).first()
+          : null) || key;
+      if (bookKey) {
         note.name = note.name || shortid.generate();
         try {
           if (!note.enabled) {
@@ -77,7 +81,7 @@ async function checkSync() {
             note.hash = await uploadFileEncrypted(
               note.content,
               '/' + book.name + '/' + note.name,
-              key,
+              bookKey,
               note.hash,
               note.force
             );

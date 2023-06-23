@@ -83,14 +83,10 @@ export function logout() {
 export function login(
   provider: string = process.env.NODE_ENV === 'production' ? 'wechat' : 'local'
 ) {
-  if (!client.connected) {
-    throw new Error('登录服务器未连接成功,请稍后重试!');
-  }
+  // Connect to login server
+  client.connect();
   window.open(`${loginServer}/login/${provider}`, loginServer);
 }
-
-// Connect to login server
-client.connect();
 
 //   // Access properties
 //   client.loggedIn
