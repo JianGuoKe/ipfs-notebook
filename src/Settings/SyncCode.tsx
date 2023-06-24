@@ -79,7 +79,7 @@ export function SyncCode({
         footer={null}
         closable={false}
         maskClosable={status === 'synced'}
-        onCancel={() => setOpenCode(0)}
+        onCancel={() => stopSync()}
         okButtonProps={{ disabled: true }}
         className="ipfs-settings-synccode"
       >
