@@ -133,14 +133,14 @@ class NoteReactQuill extends ReactQuill {
                 db.switchMenuVisible();
               }}
             />
-            <select className="ql-header">
+            <select className="ql-header" title="标题">
               {/* <option value="1"></option>
               <option value="2"></option>
               <option value="3"></option>
               <option value=""></option> */}
             </select>
 
-            <select className="ql-color">
+            <select className="ql-color" title="字体颜色">
               {/* <option value="#ff7473"></option>
               <option value="#f9c00c"></option>
               <option value="#79bd9a"></option>
@@ -149,7 +149,7 @@ class NoteReactQuill extends ReactQuill {
               <option value="#d0d1d2"></option>
               <option value=""></option> */}
             </select>
-            <select className="ql-background">
+            <select className="ql-background" title="背景色">
               {/* <option value="#ff7473"></option>
               <option value="#f9c00c"></option>
               <option value="#79bd9a"></option>
@@ -159,15 +159,27 @@ class NoteReactQuill extends ReactQuill {
               <option value=""></option> */}
             </select>
 
-            <button type="button" className="ql-bold"></button>
-            <button type="button" className="ql-italic"></button>
-            <button type="button" className="ql-strike"></button>
-            <button type="button" className="ql-underline"></button>
-            <button type="button" className="ql-link"></button>
-            <button type="button" className="ql-image"></button>
+            <button type="button" className="ql-bold" title="粗体"></button>
+            <button type="button" className="ql-italic" title="斜体"></button>
+            <button type="button" className="ql-strike" title="删除线"></button>
+            <button
+              type="button"
+              className="ql-underline"
+              title="下划线"
+            ></button>
+            <button type="button" className="ql-link" title="超链接"></button>
+            <button type="button" className="ql-image" title="图片"></button>
             {/* <button type="button" className="ql-video"></button> */}
-            <button type="button" className="ql-blockquote"></button>
-            <button type="button" className="ql-code-block"></button>
+            <button
+              type="button"
+              className="ql-blockquote"
+              title="引用"
+            ></button>
+            <button
+              type="button"
+              className="ql-code-block"
+              title="代码块"
+            ></button>
 
             {/* <Button
               title="插入一个表格"
@@ -177,15 +189,40 @@ class NoteReactQuill extends ReactQuill {
               icon={<TableOutlined />}
               onClick={() => this.insertTable()}
             ></Button> */}
-            <button type="button" className="ql-table" value="newtable_3_3">
+            <button
+              type="button"
+              className="ql-table"
+              value="newtable_3_3"
+              title="表格"
+            >
               <TableOutlined />
             </button>
             {/* <button type="button" className="ql-table" value="insert"></button> */}
 
-            <button type="button" className="ql-list" value="ordered"></button>
-            <button type="button" className="ql-list" value="bullet"></button>
-            <button type="button" className="ql-indent" value="-1"></button>
-            <button type="button" className="ql-indent" value="+1"></button>
+            <button
+              type="button"
+              className="ql-list"
+              value="ordered"
+              title="有序列表"
+            ></button>
+            <button
+              type="button"
+              className="ql-list"
+              value="bullet"
+              title="无序列表"
+            ></button>
+            <button
+              type="button"
+              className="ql-indent"
+              value="-1"
+              title="减少缩进"
+            ></button>
+            <button
+              type="button"
+              className="ql-indent"
+              value="+1"
+              title="增加缩进"
+            ></button>
 
             {/* <select className="ql-size"></select> */}
 
@@ -213,10 +250,14 @@ class NoteReactQuill extends ReactQuill {
               }
               onClick={() => this.formatJson()}
             ></Button> */}
-            <button type="button" className="ql-clean"></button>
+            <button
+              type="button"
+              className="ql-clean"
+              title="清除格式"
+            ></button>
 
             <Button
-              title="社区讨论"
+              title="问题反馈"
               type="link"
               className="devbtn"
               icon={<QuestionCircleOutlined />}
@@ -224,7 +265,7 @@ class NoteReactQuill extends ReactQuill {
             ></Button>
 
             <Button
-              title="点击安装桌面版"
+              title="桌面版"
               className="pwsinstall"
               type="link"
               id="pwsinstallql"
