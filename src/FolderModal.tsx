@@ -21,6 +21,7 @@ export default function ({
   useEffect(() => {
     setMode(mode);
     setOpenTip(false);
+    setCode('');
   }, [mode]);
 
   function handleClose() {

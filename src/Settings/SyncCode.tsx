@@ -28,6 +28,7 @@ export function SyncCode({
         open={!!openCode}
         footer={null}
         closable={false}
+        maskClosable={false}
         onCancel={() => setOpenCode(0)}
         okButtonProps={{ disabled: true }}
         className="ipfs-settings-synccode"
