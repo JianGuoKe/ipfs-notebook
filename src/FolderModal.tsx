@@ -2,6 +2,12 @@ import { Button, InputRef, Modal, Input, message, Popconfirm } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { db } from './Data';
 import { trackClick } from './tracker';
+import { connectWsChannel } from './Channel';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { startSync } from './Node';
+
+let dontShowTip = false;
+let dispose: () => void;
 
 export default function ({
   open,
@@ -17,6 +23,13 @@ export default function ({
   const [code, setCode] = useState('');
   const [openTip, setOpenTip] = useState(false);
   const [loading, setLoading] = useState(false);
+  const folders = useLiveQuery(() => db.books.toArray(), []);
+  const options = useLiveQuery(() => db.getOptions(), []);
+
+  function handleNotShowTip() {
+    dontShowTip = true;
+    setOpenTip(false);
+  }
 
   useEffect(() => {
     setMode(mode);
@@ -25,14 +38,13 @@ export default function ({
   }, [mode]);
 
   function handleClose() {
-    if (loading) {
-      setLoading(false);
-    }
+    dispose && dispose();
+    setLoading(false);
     setOpenTip(false);
     setTimeout(() => {
       onClose && onClose();
       setMode(mode);
-      setOpenTip(false);
+      setCode('');
     }, 0);
   }
 
@@ -55,16 +67,74 @@ export default function ({
   }
 
   async function addHashFromCode() {
-    try {
-      if (!code || code.length < 6) {
-        return message.warning('同步码无效');
-      }
-      setLoading(true);
-      // await db.addBook(code);
-      // handleClose();
-    } catch (err) {
-      message.error((err as Error).message);
+    if (!code || code.length < 6) {
+      return message.warning('同步码无效');
     }
+    setLoading(true);
+    dispose = connectWsChannel(
+      options!.clientId!,
+      code.toString(),
+      (ready, clients, ws) => {
+        if (ready) {
+          if (clients?.length! > 1) {
+            ws!.send(
+              JSON.stringify({
+                command: 'send',
+                type: 'getFolders',
+              })
+            );
+          } else {
+            message.error('同步码不存在');
+            dispose();
+            setLoading(false);
+          }
+        } else {
+          dispose();
+          message.error('连接失败!稍后重试');
+          setLoading(false);
+        }
+      },
+      async (type, data, ws) => {
+        if (type === 'folders') {
+          try {
+            let syncCount = 0;
+            for (const folder of data) {
+              if (!folders?.some((it) => it.name === folder.name)) {
+                const keyName = await db.upsertKey(
+                  folder.key.priKey,
+                  folder.key.pubKey
+                );
+                await db.addBook(
+                  folder.name,
+                  folder.root,
+                  folder.hash,
+                  keyName
+                );
+                syncCount++;
+              }
+            }
+            ws!.send(
+              JSON.stringify({
+                command: 'send',
+                type: 'syncEnd',
+              })
+            );
+            startSync();
+            message.success(
+              syncCount > 0 ? `同步${syncCount}个文件夹完成` : '无需同步'
+            );
+            if (syncCount > 0) {
+              handleClose();
+            } else {
+              dispose();
+              setLoading(false);
+            }
+          } catch (err) {
+            message.error((err as Error).message);
+          }
+        }
+      }
+    );
   }
 
   const footer = [];
@@ -156,8 +226,8 @@ export default function ({
         <Popconfirm
           zIndex={9999}
           showCancel={false}
-          open={openTip}
-          onConfirm={() => setOpenTip(false)}
+          open={openTip && !dontShowTip}
+          onConfirm={() => handleNotShowTip()}
           okText="知道了"
           title={'如何获取同步码'}
           description={'打开要同步的设备上记事本 [设置]-[数据同步]-[同步码]'}

@@ -264,7 +264,7 @@ export class NoteBookDexie extends Dexie {
     return await this.books.get(id);
   }
 
-  async addBook(name: string, root?: string, hash?: string) {
+  async addBook(name: string, root?: string, hash?: string, keyName?: string) {
     const currentNode = await this.getActaiveNode();
     if (!currentNode?.url) {
       throw new Error('IPFS接入节点未知,需要再设置中添加');
@@ -279,6 +279,7 @@ export class NoteBookDexie extends Dexie {
       updateAt: getDateNow(),
       checkAt: new Date(0),
       isActived: false,
+      activeKey: keyName,
     });
     await this.changeBook(id);
   }
@@ -390,6 +391,19 @@ export class NoteBookDexie extends Dexie {
     }
   }
 
+  async upsertKey(priKey: string, pubKey: string) {
+    const exists = await this.keys
+      .filter(
+        (key) =>
+          loadPem(key.priKey, false).private === loadPem(priKey, false).private
+      )
+      .first();
+    if (exists) {
+      return exists.name;
+    }
+    return await this.addKey(priKey, pubKey);
+  }
+
   async addKey(priKey: string, pubKey: string) {
     const exists = await this.keys
       .filter(
@@ -400,13 +414,15 @@ export class NoteBookDexie extends Dexie {
     if (exists) {
       throw new Error('秘钥已经存在');
     }
+    const name = shortid.generate();
     await this.keys.add({
-      name: shortid.generate(),
+      name,
       priKey,
       pubKey,
       enabled: true,
       createAt: getDateNow(),
     });
+    return name;
   }
 
   async deleteKey(id: IndexableType) {

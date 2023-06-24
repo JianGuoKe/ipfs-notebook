@@ -24,6 +24,7 @@
     "gbv-login-client": "^1.0.3",
     "global": "^4.4.0",
     "ipfs-http-client": "^59.0.0",
+    "isomorphic-ws": "^5.0.0",
     "keypair": "^1.0.4",
     "postcss-px-to-viewport": "^1.1.1",
     "postcss-pxtorem": "^6.0.0",
@@ -38,7 +39,8 @@
     "react-quill": "^2.0.0",
     "readable-stream": "^4.4.0",
     "shortid": "^2.2.16",
-    "stream-browserify": "^3.0.0"
+    "stream-browserify": "^3.0.0",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
@@ -49,6 +51,7 @@
     "@types/react-custom-scrollbars": "^4.0.10",
     "@types/react-dom": "^18.0.8",
     "@types/shortid": "^0.0.29",
+    "@types/ws": "^8.5.5",
     "@vitejs/plugin-react": "^2.2.0",
     "autoprefixer": "^10.4.14",
     "consola": "^2.15.3",
