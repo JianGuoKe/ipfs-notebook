@@ -108,6 +108,7 @@ export default function ({
                   folder.name,
                   folder.root,
                   folder.hash,
+                  folder.title,
                   keyName
                 );
                 syncCount++;

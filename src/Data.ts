@@ -264,7 +264,13 @@ export class NoteBookDexie extends Dexie {
     return await this.books.get(id);
   }
 
-  async addBook(name: string, root?: string, hash?: string, keyName?: string) {
+  async addBook(
+    name: string,
+    root?: string,
+    hash?: string,
+    title?: string,
+    keyName?: string
+  ) {
     const currentNode = await this.getActaiveNode();
     if (!currentNode?.url) {
       throw new Error('IPFS接入节点未知,需要再设置中添加');
@@ -274,6 +280,7 @@ export class NoteBookDexie extends Dexie {
       root,
       hash,
       name,
+      title,
       enabled: true,
       createAt: getDateNow(),
       updateAt: getDateNow(),

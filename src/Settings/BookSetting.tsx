@@ -128,6 +128,7 @@ export function BookSetting({ onFolderAdd }: { onFolderAdd: () => void }) {
                       value={title}
                       style={{ width: 80 }}
                       size="small"
+                      title="按回车保存"
                       autoFocus
                       onBlur={(e) => setBookEdit(undefined)}
                       onKeyDown={(e) => checkEditEnd(e)}

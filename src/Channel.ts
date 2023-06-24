@@ -7,6 +7,8 @@ export function connectWsChannel(
   onReady?: (ok: boolean, clients?: string[], ws?: WebSocket) => void,
   onMessage?: (type: string, message: any, ws: WebSocket) => void
 ) {
+  let isClosing = false;
+
   const ws = new WebSocket(
     process.env.NODE_ENV === 'production'
       ? 'wss://ipfs.jianguoke.cn/ws'
@@ -24,6 +26,9 @@ export function connectWsChannel(
 
   ws.onclose = function close() {
     trackClick('wsClose');
+    if (isClosing) {
+      return;
+    }
     onReady && onReady(false);
   };
 
@@ -55,6 +60,7 @@ export function connectWsChannel(
   };
 
   return () => {
+    isClosing = true;
     ws.close();
   };
 }
