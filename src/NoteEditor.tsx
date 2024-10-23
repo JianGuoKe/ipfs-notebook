@@ -62,6 +62,12 @@ Quill.register('modules/table', TableModule);
 
 let isFirstShow = false;
 
+document.addEventListener('copy', function (e) {
+  var text = window.getSelection()?.toString().replace(/\n\n/g, '\n') || '';
+  e.clipboardData?.setData('text/plain', text);
+  e.preventDefault();
+});
+
 class NoteReactQuill extends ReactQuill {
   // quillMarkdown: any;
   ready = false;
