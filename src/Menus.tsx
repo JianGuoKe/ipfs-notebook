@@ -28,7 +28,7 @@ const customizeRenderEmpty = () => (
 );
 
 const reg = /<[^>]+>/gim;
-const regP = /<p(?:(?!<\/p>).|\n)*?<\/p>/gm;
+const regP = /<(p|h1|h2|h3)(?:(?!<\\2>).|\n)*?<\/\1>/gm;
 
 function getContainerHeight() {
   return window.innerHeight - 41;
@@ -81,7 +81,7 @@ export default function ({
         noteId: it.id,
         ok: it.syncAt && it.updateAt && it.syncAt >= it.updateAt,
         reason: it.reason,
-        title: (txts[0] || '').replace(reg, ''),
+        title: txts.find((txt) => txt.replace(reg, ''))?.replace(reg, ''),
         lastAt: it.updateAt || it.createAt || it.deleteAt,
         summary: txts?.slice(1).join('\n').replace(reg, '').substring(0, 20),
       };
